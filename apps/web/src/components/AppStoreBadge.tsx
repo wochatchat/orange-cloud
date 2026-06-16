@@ -1,6 +1,6 @@
 export const APP_STORE_URL = "https://apps.apple.com/app/id6779323783";
 export const TESTFLIGHT_URL = "https://testflight.apple.com/join/ZGhbsphj";
-export const APP_STORE_COMING = true;
+export const APP_STORE_COMING = false;
 
 const APPLE_LOCALE: Record<string, string> = {
 	en: "en-us",
@@ -8,6 +8,10 @@ const APPLE_LOCALE: Record<string, string> = {
 	"zh-Hant": "zh-tw",
 	"zh-HK": "zh-hk",
 	ja: "ja-jp",
+	"es-MX": "es-mx",
+	ko: "ko-kr",
+	"pt-BR": "pt-br",
+	"pt-PT": "pt-pt",
 };
 
 function badgeSrc(locale: string): string {

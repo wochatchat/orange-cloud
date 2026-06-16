@@ -38,6 +38,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 	const changelogEntries = t.raw("changelog.entries") as Array<{
 		version: string;
 		date: string;
+		channel?: string;
 		notes: string[];
 	}>;
 
@@ -321,7 +322,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 														className="rounded-full px-2 py-0.5 text-[11px] font-medium"
 														style={{ background: "rgba(244,129,32,0.15)", color: "var(--oc-orange)" }}
 													>
-														TestFlight β
+														{entry.channel ?? "TestFlight β"}
 													</span>
 												</div>
 												<ul className="mt-3 space-y-1.5">

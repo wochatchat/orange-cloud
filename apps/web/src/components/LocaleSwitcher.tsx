@@ -10,6 +10,10 @@ const LOCALE_NAMES: Record<AppLocale, string> = {
 	"zh-Hant": "繁體中文（台灣）",
 	"zh-HK": "繁體中文（香港）",
 	ja: "日本語",
+	"es-MX": "Español (México)",
+	ko: "한국어",
+	"pt-BR": "Português (Brasil)",
+	"pt-PT": "Português (Portugal)",
 };
 
 export default function LocaleSwitcher({ label }: { label: string }) {

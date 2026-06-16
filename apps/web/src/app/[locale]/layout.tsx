@@ -15,6 +15,10 @@ const OG_LOCALES: Record<string, string> = {
 	"zh-Hant": "zh_TW",
 	"zh-HK": "zh_HK",
 	ja: "ja_JP",
+	"es-MX": "es_MX",
+	ko: "ko_KR",
+	"pt-BR": "pt_BR",
+	"pt-PT": "pt_PT",
 };
 
 // 各语言社交分享图（晨昏横幅，1280×640）。生成：orange-cloud/appstore/render/og.mjs
@@ -53,6 +57,10 @@ export async function generateMetadata({
 				"zh-Hant": "/zh-Hant",
 				"zh-HK": "/zh-HK",
 				ja: "/ja",
+				"es-MX": "/es-MX",
+				ko: "/ko",
+				"pt-BR": "/pt-BR",
+				"pt-PT": "/pt-PT",
 				"x-default": "/",
 			},
 		},
@@ -105,7 +113,7 @@ export default async function LocaleLayout({
 		"@context": "https://schema.org",
 		"@type": "SoftwareApplication",
 		name: "Orange Cloud",
-		operatingSystem: "iOS 18.0 or later",
+		operatingSystem: "iOS 17.0 or later",
 		applicationCategory: "DeveloperApplication",
 		description: t("description"),
 		url: SITE_URL,
