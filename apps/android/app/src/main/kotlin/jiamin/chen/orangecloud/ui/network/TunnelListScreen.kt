@@ -1,7 +1,7 @@
 package jiamin.chen.orangecloud.ui.network
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,7 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Hub
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -43,6 +45,7 @@ import jiamin.chen.orangecloud.ui.storage.StorageListBody
 @Composable
 fun TunnelListScreen(
     onBack: () -> Unit,
+    onOpenTunnel: (id: String, name: String) -> Unit,
     viewModel: TunnelListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -62,21 +65,21 @@ fun TunnelListScreen(
                 refreshDescription = stringResource(R.string.common_refresh),
             )
             StorageListBody(state, onSky, Icons.Outlined.Hub, stringResource(R.string.tunnel_empty), { viewModel.load() }) { tunnel ->
-                TunnelRow(tunnel)
+                TunnelRow(tunnel, onClick = { onOpenTunnel(tunnel.id, tunnel.name) })
             }
         }
     }
 }
 
 @Composable
-private fun TunnelRow(tunnel: Tunnel) {
+private fun TunnelRow(tunnel: Tunnel, onClick: () -> Unit) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(16.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(10.dp).clip(CircleShape).background(statusColor(tunnel.status)))
+            Box(Modifier.size(10.dp).clip(CircleShape).background(tunnelStatusColor(tunnel.status)))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(
@@ -88,23 +91,28 @@ private fun TunnelRow(tunnel: Tunnel) {
                     color = MaterialTheme.colorScheme.onSurface,
                 )
                 Text(
-                    "${stringResource(statusLabel(tunnel.status))} · ${stringResource(R.string.tunnel_connections, tunnel.activeConnections)}",
+                    "${stringResource(tunnelStatusLabel(tunnel.status))} · ${stringResource(R.string.tunnel_connections, tunnel.activeConnections)}",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
+            Icon(
+                Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
 
-private fun statusColor(status: String?): Color = when (status) {
+internal fun tunnelStatusColor(status: String?): Color = when (status) {
     "healthy" -> Color(0xFF2FBF71)
     "degraded" -> Color(0xFFF5A623)
     "down" -> Color(0xFFE5484D)
     else -> Color(0xFF9AA0A6)
 }
 
-private fun statusLabel(status: String?): Int = when (status) {
+internal fun tunnelStatusLabel(status: String?): Int = when (status) {
     "healthy" -> R.string.tunnel_status_healthy
     "degraded" -> R.string.tunnel_status_degraded
     "down" -> R.string.tunnel_status_down

@@ -1,5 +1,6 @@
 package jiamin.chen.orangecloud.ui.workers
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,8 +22,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.foundation.layout.height
@@ -31,7 +36,10 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,12 +51,17 @@ import jiamin.chen.orangecloud.core.design.SkyBackground
 import jiamin.chen.orangecloud.core.design.SkyHeader
 import jiamin.chen.orangecloud.core.design.onSky
 import jiamin.chen.orangecloud.core.design.rememberSkyPhase
+import jiamin.chen.orangecloud.core.design.StatusDot
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
+import jiamin.chen.orangecloud.data.model.AnalyticsTimeRange
+import jiamin.chen.orangecloud.data.model.WorkerSeriesPoint
+import jiamin.chen.orangecloud.data.model.WorkerStatusCount
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WorkerDetailScreen(
     onBack: () -> Unit,
@@ -89,23 +102,59 @@ fun WorkerDetailScreen(
                     Text(stringResource(R.string.tail_title))
                 }
 
-                val metrics by viewModel.metrics.collectAsStateWithLifecycle()
-                metrics?.let { m ->
+                if (viewModel.canViewMetrics) {
+                    val metrics by viewModel.metrics.collectAsStateWithLifecycle()
+                    val series by viewModel.series.collectAsStateWithLifecycle()
+                    val metricsLoading by viewModel.metricsLoading.collectAsStateWithLifecycle()
+                    val range by viewModel.range.collectAsStateWithLifecycle()
+
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        val options = AnalyticsTimeRange.entries
+                        options.forEachIndexed { index, option ->
+                            SegmentedButton(
+                                selected = option == range,
+                                onClick = { viewModel.selectRange(option) },
+                                shape = SegmentedButtonDefaults.itemShape(index, options.size),
+                            ) {
+                                Text(stringResource(rangeLabel(option)))
+                            }
+                        }
+                    }
+
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceContainerLow,
                         shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        Column(Modifier.padding(16.dp)) {
-                            Text(stringResource(R.string.worker_metrics_24h), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Spacer(Modifier.height(12.dp))
-                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                MetricCell(stringResource(R.string.worker_metric_requests), m.requests.toString())
-                                MetricCell(stringResource(R.string.worker_metric_errors), m.errors.toString())
-                                MetricCell(stringResource(R.string.worker_metric_error_rate), "%.1f%%".format(m.errorRate))
+                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            when {
+                                metricsLoading && metrics == null ->
+                                    Box(Modifier.fillMaxWidth().padding(vertical = 12.dp), Alignment.Center) {
+                                        androidx.compose.material3.CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = OcOrange)
+                                    }
+
+                                else -> metrics?.let { m ->
+                                    if (series.size > 1) {
+                                        WorkerTrendChart(series, Modifier.fillMaxWidth().height(120.dp))
+                                    }
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        MetricCell(stringResource(R.string.worker_metric_requests), formatCount(m.requests), Modifier.weight(1f))
+                                        MetricCell(stringResource(R.string.worker_metric_errors), formatCount(m.errors), Modifier.weight(1f))
+                                        MetricCell(stringResource(R.string.worker_metric_subrequests), formatCount(m.subrequests), Modifier.weight(1f))
+                                        MetricCell(stringResource(R.string.worker_metric_error_rate), "%.1f%%".format(m.errorRate), Modifier.weight(1f))
+                                    }
+                                    m.cpuP50Us?.let { p50 ->
+                                        InfoRow(
+                                            stringResource(R.string.worker_metric_cpu),
+                                            "P50 %.1f ms · P99 %.1f ms".format(p50 / 1000.0, (m.cpuP99Us ?: 0.0) / 1000.0),
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
+
+                    metrics?.statusBreakdown?.takeIf { it.isNotEmpty() }?.let { StatusBreakdownCard(it) }
                 }
 
                 Surface(
@@ -139,12 +188,24 @@ fun WorkerDetailScreen(
 }
 
 @Composable
-private fun MetricCell(label: String, value: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+private fun MetricCell(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(value, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, maxLines = 1)
         Spacer(Modifier.height(2.dp))
-        Text(label, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Text(label, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
     }
+}
+
+private fun rangeLabel(range: AnalyticsTimeRange): Int = when (range) {
+    AnalyticsTimeRange.LAST_24H -> R.string.range_24h
+    AnalyticsTimeRange.LAST_7D -> R.string.range_7d
+    AnalyticsTimeRange.LAST_30D -> R.string.range_30d
+}
+
+private fun formatCount(n: Long): String = when {
+    n >= 1_000_000 -> "%.1fM".format(n / 1_000_000.0)
+    n >= 1_000 -> "%.1fK".format(n / 1_000.0)
+    else -> n.toString()
 }
 
 @Composable
@@ -176,6 +237,84 @@ private fun Handlers(handlers: List<String>) {
             }
         }
     }
+}
+
+/** 调用趋势：请求橙色面积+线，错误红色线（与请求共轴，错误恒 ≤ 请求）。 */
+@Composable
+private fun WorkerTrendChart(points: List<WorkerSeriesPoint>, modifier: Modifier) {
+    val requests = points.map { it.requests.toFloat() }
+    val errors = points.map { it.errors.toFloat() }
+    val maxV = (requests.maxOrNull() ?: 0f).coerceAtLeast(1f)
+    val hasErrors = errors.any { it > 0f }
+    val errorColor = Color(0xFFE5484D)
+    Canvas(modifier) {
+        val n = requests.size
+        if (n == 0) return@Canvas
+        val w = size.width
+        val h = size.height
+        val stepX = if (n > 1) w / (n - 1) else 0f
+        fun px(i: Int) = i * stepX
+        fun py(v: Float) = h - (v / maxV) * h * 0.92f - h * 0.04f
+
+        val line = Path().apply {
+            moveTo(px(0), py(requests[0]))
+            for (i in 1 until n) lineTo(px(i), py(requests[i]))
+        }
+        val area = Path().apply {
+            addPath(line)
+            lineTo(px(n - 1), h)
+            lineTo(px(0), h)
+            close()
+        }
+        drawPath(area, Brush.verticalGradient(listOf(OcOrange.copy(alpha = 0.30f), OcOrange.copy(alpha = 0f))))
+        drawPath(line, color = OcOrange, style = Stroke(width = 3f))
+        if (hasErrors) {
+            val errLine = Path().apply {
+                moveTo(px(0), py(errors[0]))
+                for (i in 1 until n) lineTo(px(i), py(errors[i]))
+            }
+            drawPath(errLine, color = errorColor, style = Stroke(width = 1.5f))
+        }
+    }
+}
+
+@Composable
+private fun StatusBreakdownCard(items: List<WorkerStatusCount>) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(stringResource(R.string.worker_status_title), fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            items.forEach { item ->
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    StatusDot(workerStatusColor(item.status), size = 8.dp)
+                    Spacer(Modifier.width(10.dp))
+                    Text(workerStatusLabel(item.status), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+                    Text(formatCount(item.requests), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun workerStatusLabel(status: String): String = when (status) {
+    "success" -> stringResource(R.string.worker_status_success)
+    "scriptThrewException" -> stringResource(R.string.worker_status_exception)
+    "exceededCpu" -> stringResource(R.string.worker_status_cpu)
+    "exceededMemory" -> stringResource(R.string.worker_status_memory)
+    "clientDisconnected" -> stringResource(R.string.worker_status_client_disconnect)
+    "canceled" -> stringResource(R.string.worker_status_canceled)
+    "responseStreamDisconnected" -> stringResource(R.string.worker_status_stream_disconnect)
+    else -> status
+}
+
+private fun workerStatusColor(status: String): Color = when (status) {
+    "success" -> Color(0xFF2FBF71)
+    "clientDisconnected", "canceled", "responseStreamDisconnected" -> Color(0xFF9AA0A6)
+    else -> Color(0xFFE5484D)
 }
 
 private val isoFormatter: DateTimeFormatter =

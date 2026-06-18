@@ -1,7 +1,6 @@
 package jiamin.chen.orangecloud.ui.root
 
 import android.net.Uri
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -46,6 +45,7 @@ import jiamin.chen.orangecloud.core.design.SkyPhase
 import jiamin.chen.orangecloud.ui.analytics.ZoneAnalyticsScreen
 import jiamin.chen.orangecloud.ui.dashboard.DashboardScreen
 import jiamin.chen.orangecloud.ui.dns.DnsListScreen
+import jiamin.chen.orangecloud.ui.network.TunnelDetailScreen
 import jiamin.chen.orangecloud.ui.network.TunnelListScreen
 import jiamin.chen.orangecloud.ui.paywall.ProGate
 import jiamin.chen.orangecloud.ui.waf.WafRulesScreen
@@ -60,6 +60,7 @@ import jiamin.chen.orangecloud.ui.snippets.SnippetEditorScreen
 import jiamin.chen.orangecloud.ui.snippets.SnippetsListScreen
 import jiamin.chen.orangecloud.ui.storage.D1DatabaseListScreen
 import jiamin.chen.orangecloud.ui.storage.D1QueryScreen
+import jiamin.chen.orangecloud.ui.storage.D1TableScreen
 import jiamin.chen.orangecloud.ui.storage.KVKeyListScreen
 import jiamin.chen.orangecloud.ui.storage.KVNamespaceListScreen
 import jiamin.chen.orangecloud.ui.storage.R2BucketListScreen
@@ -99,6 +100,7 @@ private object Dest {
     const val SETTINGS = "settings"
     const val IDENTITY_ROUTE = "identity/{sessionId}"
     const val TUNNELS = "tunnels"
+    const val TUNNEL_DETAIL_ROUTE = "tunnel/{tunnelId}?tunnelName={tunnelName}"
     const val STATUS = "status"
     const val PAYWALL = "paywall"
     const val WAF_ROUTE = "waf/{zoneId}?zoneName={zoneName}"
@@ -107,6 +109,7 @@ private object Dest {
     const val R2_OBJECTS_ROUTE = "r2/objects/{bucket}"
     const val D1_DATABASES = "d1/databases"
     const val D1_QUERY_ROUTE = "d1/query/{dbId}?dbName={dbName}"
+    const val D1_TABLE_ROUTE = "d1/table/{dbId}?table={table}"
     const val KV_NAMESPACES = "kv/namespaces"
     const val KV_KEYS_ROUTE = "kv/keys/{nsId}?nsTitle={nsTitle}"
     const val ZONE_DETAIL_ROUTE = "zone/{zoneId}?zoneName={zoneName}"
@@ -128,15 +131,17 @@ private object Dest {
     fun snippetEdit(zoneId: String, zoneName: String, name: String) =
         "snippetEdit/$zoneId?zoneName=${Uri.encode(zoneName)}&name=${Uri.encode(name)}"
     fun identity(sessionId: String): String = "identity/${Uri.encode(sessionId)}"
+    fun tunnelDetail(id: String, name: String): String = "tunnel/$id?tunnelName=${Uri.encode(name)}"
     fun worker(scriptName: String): String = "worker/${Uri.encode(scriptName)}"
     fun tail(scriptName: String): String = "tail/${Uri.encode(scriptName)}"
     fun r2Objects(bucket: String): String = "r2/objects/${Uri.encode(bucket)}"
     fun d1Query(dbId: String, dbName: String): String = "d1/query/$dbId?dbName=${Uri.encode(dbName)}"
+    fun d1Table(dbId: String, table: String): String = "d1/table/$dbId?table=${Uri.encode(table)}"
     fun kvKeys(nsId: String, nsTitle: String): String = "kv/keys/$nsId?nsTitle=${Uri.encode(nsTitle)}"
 
     /** 路由 → 高亮的顶级标签（下钻页归属其父标签）。 */
     fun topOf(route: String?): TopDestination = when {
-        route == DASHBOARD || route == TUNNELS -> TopDestination.Dashboard
+        route == DASHBOARD || route == TUNNELS || route?.startsWith("tunnel/") == true -> TopDestination.Dashboard
         route == SETTINGS || route == STATUS || route?.startsWith("identity/") == true -> TopDestination.Settings
         route == WORKERS || route?.startsWith("worker/") == true || route?.startsWith("tail/") == true ->
             TopDestination.Workers
@@ -222,7 +227,21 @@ private fun MainScaffold() {
                 PaywallScreen()
             }
             composable(Dest.TUNNELS) {
-                ProGate { TunnelListScreen(onBack = { navController.popBackStack() }) }
+                ProGate {
+                    TunnelListScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenTunnel = { id, name -> navController.navigate(Dest.tunnelDetail(id, name)) },
+                    )
+                }
+            }
+            composable(
+                route = Dest.TUNNEL_DETAIL_ROUTE,
+                arguments = listOf(
+                    navArgument("tunnelId") { type = NavType.StringType },
+                    navArgument("tunnelName") { type = NavType.StringType; defaultValue = "" },
+                ),
+            ) {
+                ProGate { TunnelDetailScreen(onBack = { navController.popBackStack() }) }
             }
             composable(
                 Dest.ZONES,
@@ -243,6 +262,7 @@ private fun MainScaffold() {
                 val zoneId = entry.arguments?.getString("zoneId").orEmpty()
                 val zoneName = entry.arguments?.getString("zoneName").orEmpty()
                 ZoneDetailScreen(
+                    zoneId = zoneId,
                     zoneName = zoneName,
                     onBack = { navController.popBackStack() },
                     onOpenDns = { navController.navigate(Dest.dns(zoneId, zoneName)) },
@@ -370,8 +390,21 @@ private fun MainScaffold() {
                     navArgument("dbId") { type = NavType.StringType },
                     navArgument("dbName") { type = NavType.StringType; defaultValue = "" },
                 ),
+            ) { entry ->
+                val dbId = entry.arguments?.getString("dbId").orEmpty()
+                D1QueryScreen(
+                    onBack = { navController.popBackStack() },
+                    onOpenTable = { table -> navController.navigate(Dest.d1Table(dbId, table)) },
+                )
+            }
+            composable(
+                route = Dest.D1_TABLE_ROUTE,
+                arguments = listOf(
+                    navArgument("dbId") { type = NavType.StringType },
+                    navArgument("table") { type = NavType.StringType; defaultValue = "" },
+                ),
             ) {
-                D1QueryScreen(onBack = { navController.popBackStack() })
+                D1TableScreen(onBack = { navController.popBackStack() })
             }
             composable(Dest.KV_NAMESPACES) {
                 KVNamespaceListScreen(
@@ -417,7 +450,7 @@ private fun MainScaffold() {
 
 @Composable
 private fun SplashScreen() {
-    val isDark = isSystemInDarkTheme()
+    val isDark = jiamin.chen.orangecloud.core.design.theme.LocalIsDark.current
     val phase = remember(isDark) { SkyPhase.current(isDark, LocalTime.now().hour) }
     SkyBackground(phase = phase) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

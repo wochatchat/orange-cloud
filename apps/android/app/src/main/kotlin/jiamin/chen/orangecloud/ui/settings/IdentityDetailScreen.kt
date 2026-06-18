@@ -1,7 +1,6 @@
 package jiamin.chen.orangecloud.ui.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -62,7 +61,7 @@ fun IdentityDetailScreen(
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
     val cs = MaterialTheme.colorScheme
-    val green = if (isSystemInDarkTheme()) OcSuccessDark else OcSuccess
+    val green = if (jiamin.chen.orangecloud.core.design.theme.LocalIsDark.current) OcSuccessDark else OcSuccess
 
     val session = state.sessions.firstOrNull { it.id == sessionId }
     val isCurrent = sessionId == state.currentSessionId

@@ -40,6 +40,10 @@ class StorageRepository @Inject constructor(
     suspend fun getObjectBytes(accountId: String, bucket: String, key: String): ByteArray =
         api.getRaw("accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}")
 
+    /** 上传对象（原始字节 PUT，自带 Content-Type；result 可能为 null 故只校验 success）。 */
+    suspend fun putObject(accountId: String, bucket: String, key: String, bytes: ByteArray, contentType: String) =
+        api.putRawVoid("accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}", bytes, contentType)
+
     suspend fun deleteObject(accountId: String, bucket: String, key: String) =
         api.delete("accounts/$accountId/r2/buckets/$bucket/objects/${encodeStorageKey(key)}")
 
@@ -59,6 +63,13 @@ class StorageRepository @Inject constructor(
         }
         return all
     }
+
+    /**
+     * 数据库详情。列表端点不返回 file_size / num_tables 的真实值（常年 0），
+     * 这两个字段以详情端点为准（对齐 iOS D1Service.getDatabase）。
+     */
+    suspend fun getDatabase(accountId: String, databaseId: String): D1Database =
+        api.get("accounts/$accountId/d1/database/$databaseId")
 
     /** 执行 SQL（每条语句一个结果）。 */
     suspend fun query(accountId: String, databaseId: String, sql: String, params: List<String>? = null): List<D1QueryResult> =

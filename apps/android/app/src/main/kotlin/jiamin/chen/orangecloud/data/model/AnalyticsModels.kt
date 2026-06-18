@@ -125,10 +125,16 @@ data class WorkerMetricsData(val viewer: WorkerMetricsViewer)
 data class WorkerMetricsViewer(val accounts: List<WorkerMetricsNode> = emptyList())
 
 @Serializable
-data class WorkerMetricsNode(val summary: List<WorkerMetricsGroup>? = null)
+data class WorkerMetricsNode(
+    val summary: List<WorkerMetricsGroup>? = null,
+    val byStatus: List<WorkerStatusGroup>? = null,
+)
 
 @Serializable
-data class WorkerMetricsGroup(val sum: WorkerMetricsSum? = null)
+data class WorkerMetricsGroup(
+    val sum: WorkerMetricsSum? = null,
+    val quantiles: WorkerQuantiles? = null,
+)
 
 @Serializable
 data class WorkerMetricsSum(
@@ -137,14 +143,63 @@ data class WorkerMetricsSum(
     val subrequests: Long? = null,
 )
 
+@Serializable
+data class WorkerQuantiles(
+    val cpuTimeP50: Double? = null,   // 微秒
+    val cpuTimeP99: Double? = null,
+)
+
+@Serializable
+data class WorkerStatusGroup(
+    val dimensions: WorkerStatusDimensions? = null,
+    val sum: WorkerMetricsSum? = null,
+)
+
+@Serializable
+data class WorkerStatusDimensions(val status: String? = null)
+
+// 时间序列（趋势图）
+@Serializable
+data class WorkerSeriesData(val viewer: WorkerSeriesViewer)
+
+@Serializable
+data class WorkerSeriesViewer(val accounts: List<WorkerSeriesNode> = emptyList())
+
+@Serializable
+data class WorkerSeriesNode(val series: List<WorkerSeriesGroup>? = null)
+
+@Serializable
+data class WorkerSeriesGroup(
+    val dimensions: WorkerSeriesDimensions? = null,
+    val sum: WorkerMetricsSum? = null,
+)
+
+@Serializable
+data class WorkerSeriesDimensions(
+    val datetimeHour: String? = null,   // 24h
+    val date: String? = null,           // 7d/30d
+)
+
 /** 聚合后的 Worker 指标。 */
 data class WorkerMetrics(
     val requests: Long,
     val errors: Long,
     val subrequests: Long,
+    val cpuP50Us: Double? = null,
+    val cpuP99Us: Double? = null,
+    val statusBreakdown: List<WorkerStatusCount> = emptyList(),
 ) {
     val errorRate: Double get() = if (requests > 0) errors.toDouble() / requests * 100 else 0.0
 }
+
+data class WorkerStatusCount(val status: String, val requests: Long)
+
+/** 趋势图数据点（请求 + 错误）。 */
+data class WorkerSeriesPoint(
+    val date: Instant,
+    val requests: Long,
+    val errors: Long,
+)
 
 /** GraphQL 查询模板（对应 iOS AnalyticsQueries）。 */
 object AnalyticsQueries {
@@ -157,11 +212,40 @@ object AnalyticsQueries {
                 filter: { scriptName: ${'$'}scriptName, datetime_geq: ${'$'}since, datetime_leq: ${'$'}until }
               ) {
                 sum { requests errors subrequests }
+                quantiles { cpuTimeP50 cpuTimeP99 }
+              }
+              byStatus: workersInvocationsAdaptive(
+                limit: 100,
+                filter: { scriptName: ${'$'}scriptName, datetime_geq: ${'$'}since, datetime_leq: ${'$'}until }
+              ) {
+                dimensions { status }
+                sum { requests }
               }
             }
           }
         }
     """.trimIndent()
+
+    /** Worker 调用趋势：24h 按小时（datetimeHour），7d/30d 按天（date）。 */
+    fun workerSeries(daily: Boolean): String {
+        val dimension = if (daily) "date" else "datetimeHour"
+        return """
+            query (${'$'}accountTag: string!, ${'$'}scriptName: string!, ${'$'}since: Time!, ${'$'}until: Time!) {
+              viewer {
+                accounts(filter: { accountTag: ${'$'}accountTag }) {
+                  series: workersInvocationsAdaptive(
+                    limit: 1000,
+                    orderBy: [${dimension}_ASC],
+                    filter: { scriptName: ${'$'}scriptName, datetime_geq: ${'$'}since, datetime_leq: ${'$'}until }
+                  ) {
+                    dimensions { $dimension }
+                    sum { requests errors }
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+    }
 
     fun zoneHourly(limit: Int): String = """
         query (${'$'}zoneTag: string!, ${'$'}since: Time!, ${'$'}until: Time!) {

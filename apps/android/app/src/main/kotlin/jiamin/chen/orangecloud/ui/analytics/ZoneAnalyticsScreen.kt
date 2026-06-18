@@ -16,7 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.ShowChart
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -97,7 +97,7 @@ fun ZoneAnalyticsScreen(
 
                     if (ui.points.isEmpty()) {
                         Spacer(Modifier.height(40.dp))
-                        SkyEmptyState(Icons.Outlined.ShowChart, stringResource(R.string.analytics_empty), onSky, stringResource(R.string.common_refresh)) { viewModel.refresh() }
+                        SkyEmptyState(Icons.AutoMirrored.Outlined.ShowChart, stringResource(R.string.analytics_empty), onSky, stringResource(R.string.common_refresh)) { viewModel.refresh() }
                     } else {
                         ui.summary?.let { SummaryGrid(it) }
                         ChartCard(stringResource(R.string.analytics_requests), ui.points) { it.requests.toFloat() }

@@ -49,6 +49,13 @@ data class D1QueryRequest(
     val params: List<String>? = null,
 )
 
+/** PRAGMA table_info 解析后的列结构（运行期结构，非 API 模型）。 */
+data class D1Column(
+    val name: String,
+    val type: String,
+    val isPrimaryKey: Boolean,
+)
+
 /** POST /query 的 result 是 [D1QueryResult]（每条语句一个结果）。 */
 @Serializable
 data class D1QueryResult(

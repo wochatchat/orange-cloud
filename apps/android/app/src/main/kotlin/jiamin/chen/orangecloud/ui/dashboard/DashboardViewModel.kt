@@ -13,11 +13,14 @@ import jiamin.chen.orangecloud.data.repository.AnalyticsRepository
 import jiamin.chen.orangecloud.data.repository.StorageRepository
 import jiamin.chen.orangecloud.data.repository.WorkerRepository
 import jiamin.chen.orangecloud.data.repository.ZoneRepository
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,6 +38,7 @@ data class DashboardUiState(
     val isLoading: Boolean = false,
 )
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val accountStore: AccountStore,
@@ -56,6 +60,15 @@ class DashboardViewModel @Inject constructor(
             accountStore.selectedAccountId.collect { id ->
                 _uiState.update { it.copy(selectedAccountId = id) }
             }
+        }
+        // 域名计数 / 最近访问：持续观察 Room 缓存（切账号自动切流）。
+        // refreshZones 写入缓存后这里会自动更新——修复冷启动一次性读空缓存恒显 0 的问题。
+        viewModelScope.launch {
+            accountStore.selectedAccountId
+                .flatMapLatest { id -> if (id == null) flowOf(emptyList()) else zoneRepository.observeZones(id) }
+                .collect { zones ->
+                    _uiState.update { it.copy(zoneCount = zones.size.toString(), recentZones = zones.take(4)) }
+                }
         }
         refresh()
     }
@@ -81,14 +94,10 @@ class DashboardViewModel @Inject constructor(
                     return@launch
                 }
 
-                // 域名（缓存优先 + 后台刷新）
+                // 先网络刷新域名缓存（zoneCount / recentZones 由 init 的持续观察自动反映）。
+                // 放在读取派生数据之前，确保今日请求量基于最新域名集计算，而非冷启动的空缓存。
+                runCatching { zoneRepository.refreshZones(accountId) }
                 val zones = zoneRepository.observeZones(accountId).first()
-                _uiState.update {
-                    it.copy(
-                        zoneCount = zones.size.toString(),
-                        recentZones = zones.take(4),
-                    )
-                }
 
                 // 各项计数独立 best-effort（缺 scope / 出错不互相拖累）
                 val workers = async { runCatching { workerRepository.refreshWorkers(accountId) }.getOrNull() }
@@ -109,8 +118,6 @@ class DashboardViewModel @Inject constructor(
             } finally {
                 _uiState.update { it.copy(isLoading = false) }
             }
-            // 触发域名网络刷新（更新缓存）
-            runCatching { accountStore.selectedAccountId.value?.let { zoneRepository.refreshZones(it) } }
         }
     }
 

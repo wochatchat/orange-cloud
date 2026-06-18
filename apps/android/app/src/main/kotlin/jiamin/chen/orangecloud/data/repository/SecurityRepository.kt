@@ -3,7 +3,9 @@ package jiamin.chen.orangecloud.data.repository
 import jiamin.chen.orangecloud.core.network.ApiError
 import jiamin.chen.orangecloud.core.network.CfApiClient
 import jiamin.chen.orangecloud.data.model.Tunnel
+import jiamin.chen.orangecloud.data.model.WafEntrypointUpdate
 import jiamin.chen.orangecloud.data.model.WafRule
+import jiamin.chen.orangecloud.data.model.WafRuleCreate
 import jiamin.chen.orangecloud.data.model.WafRuleToggle
 import jiamin.chen.orangecloud.data.model.WafRuleset
 import javax.inject.Inject
@@ -29,6 +31,18 @@ class SecurityRepository @Inject constructor(
     suspend fun setRuleEnabled(zoneId: String, rulesetId: String, rule: WafRule, enabled: Boolean): WafRuleset =
         api.patch("zones/$zoneId/rulesets/$rulesetId/rules/${rule.id}", WafRuleToggle(enabled))
 
+    /** 向已有规则集追加规则，返回更新后的 ruleset。 */
+    suspend fun addRule(zoneId: String, rulesetId: String, rule: WafRuleCreate): WafRuleset =
+        api.post("zones/$zoneId/rulesets/$rulesetId/rules", rule)
+
+    /** Zone 还没有自定义规则集时，用首条规则创建 entrypoint。 */
+    suspend fun createRuleset(zoneId: String, rule: WafRuleCreate): WafRuleset =
+        api.put("zones/$zoneId/rulesets/phases/http_request_firewall_custom/entrypoint", WafEntrypointUpdate(listOf(rule)))
+
+    /** 删除规则。 */
+    suspend fun deleteRule(zoneId: String, rulesetId: String, ruleId: String) =
+        api.delete("zones/$zoneId/rulesets/$rulesetId/rules/$ruleId")
+
     /** 账号下全部 Tunnel（排除已删除，页码分页）。 */
     suspend fun listTunnels(accountId: String): List<Tunnel> {
         val all = mutableListOf<Tunnel>()
@@ -44,4 +58,11 @@ class SecurityRepository @Inject constructor(
         }
         return all
     }
+
+    /**
+     * 单条隧道详情。cfd_tunnel 对象 schema 内嵌 connections（活跃连接，扁平形态），
+     * 列表与详情共用同一结构，故详情即可拿到连接列表（对齐 iOS：直接用内嵌 connections）。
+     */
+    suspend fun getTunnel(accountId: String, tunnelId: String): Tunnel =
+        api.get("accounts/$accountId/cfd_tunnel/$tunnelId")
 }

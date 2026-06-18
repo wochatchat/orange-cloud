@@ -27,6 +27,19 @@ data class WafRule(
 @Serializable
 data class WafRuleToggle(val enabled: Boolean)
 
+/** 新建规则（POST rules / PUT entrypoint 共用），对齐 iOS WAFRuleCreate。 */
+@Serializable
+data class WafRuleCreate(
+    val action: String,
+    val expression: String,
+    val description: String? = null,
+    val enabled: Boolean,
+)
+
+/** PUT entrypoint 创建规则集（Zone 首条自定义规则时）。 */
+@Serializable
+data class WafEntrypointUpdate(val rules: List<WafRuleCreate>)
+
 // MARK: - Cloudflare Tunnel（cfd_tunnel）
 
 @Serializable

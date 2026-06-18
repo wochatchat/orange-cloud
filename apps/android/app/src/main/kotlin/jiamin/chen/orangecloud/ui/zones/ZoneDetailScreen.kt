@@ -19,30 +19,42 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.ShowChart
+import androidx.compose.material.icons.automirrored.outlined.ShowChart
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import jiamin.chen.orangecloud.R
+import jiamin.chen.orangecloud.core.design.PlanBadge
 import jiamin.chen.orangecloud.core.design.SkyBackground
 import jiamin.chen.orangecloud.core.design.SkyHeader
+import jiamin.chen.orangecloud.core.design.StatusDot
+import jiamin.chen.orangecloud.core.design.ZoneAvatar
 import jiamin.chen.orangecloud.core.design.onSky
 import jiamin.chen.orangecloud.core.design.rememberSkyPhase
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
+import jiamin.chen.orangecloud.core.design.theme.OcSuccess
+import jiamin.chen.orangecloud.data.model.Zone
 
-/** 单个域名的工具中枢：分发到 DNS / 分析 /（后续 Snippets / WAF / 设置）。对应 iOS Zone 详情。 */
+/** 单个域名的工具中枢 + 概览（hero 卡 + 工具分发 + Name Servers）。对应 iOS ZoneDetailView。 */
 @Composable
 fun ZoneDetailScreen(
+    zoneId: String,
     zoneName: String,
     onBack: () -> Unit,
     onOpenDns: () -> Unit,
@@ -50,14 +62,17 @@ fun ZoneDetailScreen(
     onOpenWaf: () -> Unit,
     onOpenSnippets: () -> Unit,
     onOpenSettings: () -> Unit,
+    viewModel: ZoneDetailViewModel = hiltViewModel(),
 ) {
+    LaunchedEffect(zoneId) { viewModel.bind(zoneId) }
+    val zone by viewModel.zone.collectAsStateWithLifecycle()
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
 
     SkyBackground(phase = phase) {
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
             SkyHeader(
-                title = zoneName.ifBlank { stringResource(R.string.nav_zones) },
+                title = (zone?.name ?: zoneName).ifBlank { stringResource(R.string.nav_zones) },
                 onSky = onSky,
                 isLoading = false,
                 onRefresh = {},
@@ -73,11 +88,86 @@ fun ZoneDetailScreen(
                     .padding(bottom = 24.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
+                zone?.let { HeroCard(it) }
+
                 ToolRow(Icons.Outlined.Dns, stringResource(R.string.zone_tool_dns), onOpenDns)
-                ToolRow(Icons.Outlined.ShowChart, stringResource(R.string.zone_tool_analytics), onOpenAnalytics)
+                ToolRow(Icons.AutoMirrored.Outlined.ShowChart, stringResource(R.string.zone_tool_analytics), onOpenAnalytics)
                 ToolRow(Icons.Outlined.Shield, stringResource(R.string.zone_tool_waf), onOpenWaf)
                 ToolRow(Icons.Outlined.Code, stringResource(R.string.zone_tool_snippets), onOpenSnippets)
                 ToolRow(Icons.Outlined.Tune, stringResource(R.string.zone_tool_settings), onOpenSettings)
+
+                zone?.nameServers?.takeIf { it.isNotEmpty() }?.let { NameServersCard(it) }
+
+                Spacer(Modifier.size(4.dp))
+                Text(
+                    "${stringResource(R.string.zone_id_label)} · $zoneId",
+                    fontSize = 11.sp,
+                    fontFamily = FontFamily.Monospace,
+                    color = onSky.copy(alpha = 0.55f),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HeroCard(zone: Zone) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            ZoneAvatar(zone.name, size = 52.dp)
+            Text(
+                zone.name,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                StatusDot(zoneStatusColor(zone.status), size = 7.dp)
+                Text(
+                    stringResource(zoneStatusLabel(zone.status)),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = if (zone.isActive) OcSuccess else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                zone.plan?.name?.substringBefore(" ")?.takeIf { it.isNotBlank() }?.let { PlanBadge(it) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun NameServersCard(servers: List<String>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            stringResource(R.string.zone_name_servers),
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp),
+        )
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                servers.forEach { server ->
+                    Text(
+                        server,
+                        fontSize = 13.sp,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
             }
         }
     }
@@ -107,4 +197,18 @@ private fun ToolRow(icon: ImageVector, label: String, onClick: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun zoneStatusColor(status: String): Color = when (status) {
+    "active" -> OcSuccess
+    "pending", "initializing", "moved" -> Color(0xFFC77C00)
+    "paused", "deactivated" -> MaterialTheme.colorScheme.error
+    else -> MaterialTheme.colorScheme.outline
+}
+
+private fun zoneStatusLabel(status: String): Int = when (status) {
+    "active" -> R.string.zone_status_active
+    "pending", "initializing" -> R.string.zone_status_pending
+    else -> R.string.zone_status_paused
 }

@@ -25,6 +25,10 @@ class ZoneRepository @Inject constructor(
     fun observeZones(accountId: String): Flow<List<Zone>> =
         zoneDao.observeByAccount(accountId).map { rows -> rows.map { it.toZone(json) } }
 
+    /** 观察单个域名缓存（域名详情用，含状态/套餐/Name Servers）。 */
+    fun observeZone(zoneId: String): Flow<Zone?> =
+        zoneDao.observeById(zoneId).map { it?.toZone(json) }
+
     /** 从网络拉全量（自动翻页）并整账号替换缓存。 */
     suspend fun refreshZones(accountId: String) {
         val zones = fetchAllZones(accountId)

@@ -1,0 +1,28 @@
+default_platform(:android)
+
+# Orange Cloud Android — Google Play 上传（fastlane supply）。
+# 元数据在 fastlane/metadata/android/<locale>/，版本说明在 changelogs/<versionCode>.txt。
+# 截图 / 图标 / 特征图需自行放 metadata/android/<locale>/images/ 后把 skip_upload_images 改 false。
+platform :android do
+
+  # 截图已就绪（phoneScreenshots）；icon/featureGraphic 暂缺，故仍 skip_upload_images。
+  desc "只上传商店文案 + 版本说明 + 截图（不传二进制）。改文案后用这个最快"
+  lane :metadata do
+    upload_to_play_store(
+      skip_upload_apk: true,
+      skip_upload_aab: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: false,
+    )
+  end
+
+  desc "上传 AAB + 元数据 + 截图到指定轨道。track: internal(默认)/alpha(封闭测试)/beta/production"
+  lane :deploy do |options|
+    upload_to_play_store(
+      track: options[:track] || "internal",
+      aab: "app/build/outputs/bundle/playRelease/app-play-release.aab",
+      skip_upload_images: true,
+      skip_upload_screenshots: false,
+    )
+  end
+end

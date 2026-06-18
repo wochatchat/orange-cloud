@@ -22,6 +22,14 @@ fun oauthClientId(default: String): String =
         ?: providers.gradleProperty("OAUTH_CLIENT_ID").orNull
         ?: default
 
+// 发布签名（upload key）。keystore.properties 与 .jks 均不入库（见 .gitignore）；
+// 缺文件时 release 退化为未签名，保证全新 clone / CI 仍可构建。
+val keystoreProps = Properties().apply {
+    val f = rootProject.file("keystore.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val hasReleaseKeystore = keystoreProps.getProperty("storeFile") != null
+
 android {
     namespace = "jiamin.chen.orangecloud"
     compileSdk = 36
@@ -56,11 +64,24 @@ android {
         }
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                storeFile = file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            // 有 keystore.properties 时自动签名上传包；否则未签名（仅本地验证 R8）
+            signingConfig = signingConfigs.findByName("release")
         }
         debug {
             applicationIdSuffix = ".debug"

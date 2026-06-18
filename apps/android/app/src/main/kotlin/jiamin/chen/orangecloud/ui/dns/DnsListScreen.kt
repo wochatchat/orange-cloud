@@ -2,7 +2,6 @@ package jiamin.chen.orangecloud.ui.dns
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -70,7 +69,7 @@ fun DnsListScreen(
     viewModel: DnsListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val isDark = isSystemInDarkTheme()
+    val isDark = jiamin.chen.orangecloud.core.design.theme.LocalIsDark.current
     val phase = remember(isDark) { SkyPhase.current(isDark, LocalTime.now().hour) }
     val onSky = if (phase.isDark) Color(0xFFF3ECE4) else Color(0xFF24190F)
 

@@ -12,8 +12,12 @@ import jiamin.chen.orangecloud.data.model.KVKey
 import jiamin.chen.orangecloud.data.model.KVNamespace
 import jiamin.chen.orangecloud.data.model.R2Bucket
 import jiamin.chen.orangecloud.data.model.R2Object
+import jiamin.chen.orangecloud.data.model.D1Column
 import jiamin.chen.orangecloud.data.repository.AccountStore
 import jiamin.chen.orangecloud.data.repository.StorageRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,6 +26,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
 import javax.inject.Inject
 
 // MARK: - 简单列表（存储桶 / 数据库 / 命名空间）
@@ -42,7 +48,13 @@ class D1DatabaseListViewModel @Inject constructor(
     private val storageRepository: StorageRepository,
     authRepository: AuthRepository,
 ) : StorageListViewModel<D1Database>(accountStore, authRepository.hasScope(Scopes.D1_READ)) {
-    override suspend fun fetch(accountId: String) = storageRepository.listDatabases(accountId)
+    // 列表端点的 num_tables / file_size 常年为 0，并发拉详情回填真实值（对齐 iOS）。
+    // 某个库详情失败时回退到列表条目本身，不阻塞其余库。
+    override suspend fun fetch(accountId: String): List<D1Database> = coroutineScope {
+        storageRepository.listDatabases(accountId)
+            .map { db -> async { runCatching { storageRepository.getDatabase(accountId, db.uuid) }.getOrDefault(db) } }
+            .awaitAll()
+    }
     init { load() }
 }
 
@@ -58,13 +70,22 @@ class KVNamespaceListViewModel @Inject constructor(
 
 // MARK: - R2 对象（游标分页）
 
+sealed interface R2Event {
+    data object Uploaded : R2Event
+    data object Deleted : R2Event
+    data class Error(val message: String?) : R2Event
+}
+
 data class R2ObjectUiState(
     val objects: List<R2Object> = emptyList(),
     val isLoading: Boolean = false,
     val isLoadingMore: Boolean = false,
+    val isUploading: Boolean = false,
+    val isDownloading: Boolean = false,
     val hasError: Boolean = false,
     val missingScope: Boolean = false,
     val hasMore: Boolean = false,
+    val canWrite: Boolean = false,
 )
 
 @HiltViewModel
@@ -77,10 +98,16 @@ class R2ObjectListViewModel @Inject constructor(
 
     val bucket: String = checkNotNull(savedStateHandle["bucket"])
     private val hasScope = authRepository.hasScope(Scopes.R2_READ)
+    private val canWrite = authRepository.hasScope(Scopes.R2_WRITE)
     private var cursor: String? = null
 
-    private val _uiState = MutableStateFlow(R2ObjectUiState(isLoading = hasScope, missingScope = !hasScope))
+    private val _uiState = MutableStateFlow(
+        R2ObjectUiState(isLoading = hasScope, missingScope = !hasScope, canWrite = canWrite),
+    )
     val uiState: StateFlow<R2ObjectUiState> = _uiState.asStateFlow()
+
+    private val eventChannel = Channel<R2Event>(Channel.BUFFERED)
+    val events: Flow<R2Event> = eventChannel.receiveAsFlow()
 
     init {
         if (hasScope) loadFirst()
@@ -121,6 +148,52 @@ class R2ObjectListViewModel @Inject constructor(
             _uiState.update { it.copy(hasError = true) }
         }
     }
+
+    /** 下载对象原始字节（详情页预览/打开用）。失败返回 null。 */
+    suspend fun objectBytes(key: String): ByteArray? {
+        accountStore.ensureLoaded()
+        val accountId = accountStore.selectedAccountId.value ?: return null
+        _uiState.update { it.copy(isDownloading = true) }
+        return try {
+            storageRepository.getObjectBytes(accountId, bucket, key)
+        } catch (e: Exception) {
+            eventChannel.send(R2Event.Error(e.message))
+            null
+        } finally {
+            _uiState.update { it.copy(isDownloading = false) }
+        }
+    }
+
+    fun upload(filename: String, contentType: String, bytes: ByteArray) {
+        if (!canWrite) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isUploading = true) }
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                storageRepository.putObject(accountId, bucket, filename, bytes, contentType)
+                eventChannel.send(R2Event.Uploaded)
+                loadFirst()
+            } catch (e: Exception) {
+                eventChannel.send(R2Event.Error(e.message))
+            } finally {
+                _uiState.update { it.copy(isUploading = false) }
+            }
+        }
+    }
+
+    fun delete(key: String) {
+        if (!canWrite) return
+        viewModelScope.launch {
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                storageRepository.deleteObject(accountId, bucket, key)
+                _uiState.update { it.copy(objects = it.objects.filterNot { obj -> obj.key == key }) }
+                eventChannel.send(R2Event.Deleted)
+            } catch (e: Exception) {
+                eventChannel.send(R2Event.Error(e.message))
+            }
+        }
+    }
 }
 
 // MARK: - D1 查询控制台
@@ -131,6 +204,8 @@ data class D1QueryUiState(
     val isRunning: Boolean = false,
     val error: String? = null,
     val missingScope: Boolean = false,
+    val tables: List<String> = emptyList(),
+    val tablesLoaded: Boolean = false,
 )
 
 @HiltViewModel
@@ -148,6 +223,27 @@ class D1QueryViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(D1QueryUiState(missingScope = !hasScope))
     val uiState: StateFlow<D1QueryUiState> = _uiState.asStateFlow()
 
+    init {
+        if (hasScope) loadTables()
+    }
+
+    /** 用户表清单（排除 sqlite_* 与 D1 内部 _cf_* 表），对齐 iOS D1QueryViewModel.loadTables。 */
+    fun loadTables() {
+        if (!hasScope || _uiState.value.tablesLoaded) return
+        viewModelScope.launch {
+            val sql = "SELECT name FROM sqlite_master WHERE type='table' " +
+                "AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' ORDER BY name"
+            val tables = runCatching {
+                accountStore.ensureLoaded()
+                val accountId = accountStore.selectedAccountId.value ?: return@runCatching emptyList<String>()
+                storageRepository.query(accountId, databaseId, sql)
+                    .firstOrNull()?.results.orEmpty()
+                    .mapNotNull { (it["name"] as? JsonPrimitive)?.takeIf { p -> p.isString }?.content }
+            }.getOrDefault(emptyList())
+            _uiState.update { it.copy(tables = tables, tablesLoaded = true) }
+        }
+    }
+
     fun run(sql: String) {
         if (!hasScope || sql.isBlank()) return
         viewModelScope.launch {
@@ -164,6 +260,161 @@ class D1QueryViewModel @Inject constructor(
                 _uiState.update { it.copy(isRunning = false) }
             }
         }
+    }
+}
+
+// MARK: - D1 表浏览器（列结构 + rowid 分页行 + 行编辑/删除）
+
+sealed interface D1RowEvent {
+    data object Saved : D1RowEvent
+    data object Deleted : D1RowEvent
+    data class Error(val message: String?) : D1RowEvent
+}
+
+data class D1TableUiState(
+    val columns: List<D1Column> = emptyList(),
+    val rows: List<Map<String, JsonElement>> = emptyList(),
+    val isLoading: Boolean = false,
+    val isSaving: Boolean = false,
+    val hasMore: Boolean = false,
+    val error: String? = null,
+    val canWrite: Boolean = false,
+    val missingScope: Boolean = false,
+)
+
+@HiltViewModel
+class D1TableViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val accountStore: AccountStore,
+    private val storageRepository: StorageRepository,
+    authRepository: AuthRepository,
+) : ViewModel() {
+
+    val databaseId: String = checkNotNull(savedStateHandle["dbId"])
+    val tableName: String = checkNotNull(savedStateHandle["table"])
+    private val hasRead = authRepository.hasScope(Scopes.D1_READ)
+    private val canWrite = authRepository.hasScope(Scopes.D1_WRITE)
+
+    private var offset = 0
+    private val pageSize = 50
+
+    private val _uiState = MutableStateFlow(
+        D1TableUiState(isLoading = hasRead, canWrite = canWrite, missingScope = !hasRead),
+    )
+    val uiState: StateFlow<D1TableUiState> = _uiState.asStateFlow()
+
+    private val eventChannel = Channel<D1RowEvent>(Channel.BUFFERED)
+    val events: Flow<D1RowEvent> = eventChannel.receiveAsFlow()
+
+    init {
+        if (hasRead) load()
+    }
+
+    /** 标识符加引号并转义内部双引号，防 SQL 注入（对齐 iOS quoted）。 */
+    private fun quoted(identifier: String): String =
+        "\"" + identifier.replace("\"", "\"\"") + "\""
+
+    private val quotedTable: String get() = quoted(tableName)
+
+    fun load() {
+        if (!hasRead) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            try {
+                accountStore.ensureLoaded()
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                var columns = _uiState.value.columns
+                if (columns.isEmpty()) {
+                    val info = storageRepository.query(accountId, databaseId, "PRAGMA table_info($quotedTable)")
+                    columns = info.firstOrNull()?.results.orEmpty().mapNotNull { row ->
+                        val name = (row["name"] as? JsonPrimitive)?.content ?: return@mapNotNull null
+                        val type = (row["type"] as? JsonPrimitive)?.content.orEmpty()
+                        val pk = ((row["pk"] as? JsonPrimitive)?.content ?: "0") != "0"
+                        D1Column(name, type, pk)
+                    }
+                }
+                offset = 0
+                val (rows, more) = fetchPage(accountId, 0)
+                _uiState.update { it.copy(columns = columns, rows = rows, hasMore = more) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "error") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    fun loadMore() {
+        if (!hasRead || _uiState.value.isLoading || !_uiState.value.hasMore) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                offset += pageSize
+                val (rows, more) = fetchPage(accountId, offset)
+                _uiState.update { it.copy(rows = it.rows + rows, hasMore = more) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message ?: "error") }
+            } finally {
+                _uiState.update { it.copy(isLoading = false) }
+            }
+        }
+    }
+
+    /** 多取 1 行判断是否还有下一页（对齐 iOS fetchPage）。 */
+    private suspend fun fetchPage(accountId: String, offset: Int): Pair<List<Map<String, JsonElement>>, Boolean> {
+        val sql = "SELECT rowid AS $ROWID_KEY, * FROM $quotedTable LIMIT ${pageSize + 1} OFFSET $offset"
+        val results = storageRepository.query(accountId, databaseId, sql)
+        var page = results.firstOrNull()?.results.orEmpty()
+        val more = page.size > pageSize
+        if (more) page = page.dropLast(1)
+        return page to more
+    }
+
+    /** 仅更新变更列（参数化，rowid 定位）。 */
+    fun updateRow(rowid: String, changes: Map<String, String>) {
+        if (!canWrite || changes.isEmpty()) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                val assignments = changes.keys.joinToString(", ") { "${quoted(it)} = ?" }
+                val sql = "UPDATE $quotedTable SET $assignments WHERE rowid = ?"
+                val params = changes.keys.map { changes.getValue(it) } + rowid
+                storageRepository.query(accountId, databaseId, sql, params)
+                eventChannel.send(D1RowEvent.Saved)
+                load()
+            } catch (e: Exception) {
+                eventChannel.send(D1RowEvent.Error(e.message))
+            } finally {
+                _uiState.update { it.copy(isSaving = false) }
+            }
+        }
+    }
+
+    fun deleteRow(rowid: String) {
+        if (!canWrite) return
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSaving = true) }
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                storageRepository.query(
+                    accountId, databaseId,
+                    "DELETE FROM $quotedTable WHERE rowid = ?", listOf(rowid),
+                )
+                eventChannel.send(D1RowEvent.Deleted)
+                load()
+            } catch (e: Exception) {
+                eventChannel.send(D1RowEvent.Error(e.message))
+            } finally {
+                _uiState.update { it.copy(isSaving = false) }
+            }
+        }
+    }
+
+    companion object {
+        /** 行编辑用的 rowid 别名（避免与同名列冲突），对齐 iOS rowidKey。 */
+        const val ROWID_KEY = "_oc_rowid_"
     }
 }
 

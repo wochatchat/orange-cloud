@@ -2,7 +2,6 @@ package jiamin.chen.orangecloud.ui.status
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -355,7 +354,7 @@ private fun DetailRow(label: String, value: String) {
 // MARK: — 文案与配色映射
 
 @Composable
-private fun successGreen(): Color = if (isSystemInDarkTheme()) GREEN_DARK else GREEN_LIGHT
+private fun successGreen(): Color = if (jiamin.chen.orangecloud.core.design.theme.LocalIsDark.current) GREEN_DARK else GREEN_LIGHT
 
 @Composable
 private fun indicatorText(indicator: String, fallback: String): String = when (indicator) {

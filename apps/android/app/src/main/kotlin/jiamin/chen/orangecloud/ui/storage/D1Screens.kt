@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Storage
+import androidx.compose.material.icons.outlined.TableRows
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -68,10 +69,14 @@ fun D1DatabaseListScreen(
                 refreshDescription = stringResource(R.string.common_refresh),
             )
             StorageListBody(state, onSky, Icons.Outlined.Storage, stringResource(R.string.d1_empty), { viewModel.load() }) { db ->
+                val subtitle = listOfNotNull(
+                    db.fileSize?.let { formatBytes(it) },
+                    db.numTables?.let { stringResource(R.string.d1_tables, it) },
+                ).joinToString(" · ").ifEmpty { null }
                 StorageRow(
                     Icons.Outlined.Storage,
                     db.name,
-                    db.numTables?.let { stringResource(R.string.d1_tables, it) },
+                    subtitle,
                     onClick = { onOpenDatabase(db.uuid, db.name) },
                 )
             }
@@ -82,6 +87,7 @@ fun D1DatabaseListScreen(
 @Composable
 fun D1QueryScreen(
     onBack: () -> Unit,
+    onOpenTable: (table: String) -> Unit,
     viewModel: D1QueryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -108,6 +114,29 @@ fun D1QueryScreen(
                     Text(stringResource(R.string.scope_missing), color = onSky.copy(alpha = 0.8f), fontSize = 14.sp)
                     return@Column
                 }
+
+                // 表清单：点按进入表浏览器（浏览/编辑行），对齐 iOS D1QueryView 的「表」岛
+                if (!state.tablesLoaded || state.tables.isNotEmpty()) {
+                    Text(
+                        stringResource(R.string.d1_tables_section),
+                        color = onSky.copy(alpha = 0.85f),
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (!state.tablesLoaded) {
+                        CircularProgressIndicator(Modifier.height(20.dp).width(20.dp), strokeWidth = 2.dp, color = onSky)
+                    } else {
+                        state.tables.forEach { table ->
+                            StorageRow(
+                                Icons.Outlined.TableRows,
+                                table,
+                                onClick = { onOpenTable(table) },
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
+                }
+
                 OutlinedTextField(
                     value = sql,
                     onValueChange = { sql = it },

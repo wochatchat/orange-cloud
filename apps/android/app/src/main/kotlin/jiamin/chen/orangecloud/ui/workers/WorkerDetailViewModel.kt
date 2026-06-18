@@ -6,8 +6,10 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jiamin.chen.orangecloud.core.auth.AuthRepository
 import jiamin.chen.orangecloud.core.auth.Scopes
+import jiamin.chen.orangecloud.data.model.AnalyticsTimeRange
 import jiamin.chen.orangecloud.data.model.WorkerMetrics
 import jiamin.chen.orangecloud.data.model.WorkerScript
+import jiamin.chen.orangecloud.data.model.WorkerSeriesPoint
 import jiamin.chen.orangecloud.data.repository.AccountStore
 import jiamin.chen.orangecloud.data.repository.AnalyticsRepository
 import jiamin.chen.orangecloud.data.repository.WorkerRepository
@@ -31,6 +33,7 @@ class WorkerDetailViewModel @Inject constructor(
 
     val scriptName: String = checkNotNull(savedStateHandle["scriptName"])
     private val accountId: String? = accountStore.selectedAccountId.value
+    val canViewMetrics: Boolean = authRepository.hasScope(Scopes.ANALYTICS_READ)
 
     val worker: StateFlow<WorkerScript?> =
         if (accountId == null) {
@@ -44,11 +47,37 @@ class WorkerDetailViewModel @Inject constructor(
     private val _metrics = MutableStateFlow<WorkerMetrics?>(null)
     val metrics: StateFlow<WorkerMetrics?> = _metrics.asStateFlow()
 
+    private val _series = MutableStateFlow<List<WorkerSeriesPoint>>(emptyList())
+    val series: StateFlow<List<WorkerSeriesPoint>> = _series.asStateFlow()
+
+    private val _metricsLoading = MutableStateFlow(false)
+    val metricsLoading: StateFlow<Boolean> = _metricsLoading.asStateFlow()
+
+    private val _range = MutableStateFlow(AnalyticsTimeRange.LAST_24H)
+    val range: StateFlow<AnalyticsTimeRange> = _range.asStateFlow()
+
     init {
-        if (accountId != null && authRepository.hasScope(Scopes.ANALYTICS_READ)) {
-            viewModelScope.launch {
-                _metrics.value = runCatching { analyticsRepository.workerMetrics(accountId, scriptName) }.getOrNull()
-            }
+        if (accountId != null && canViewMetrics) loadMetrics()
+    }
+
+    fun selectRange(range: AnalyticsTimeRange) {
+        if (range == _range.value) return
+        _range.value = range
+        loadMetrics()
+    }
+
+    private fun loadMetrics() {
+        if (accountId == null || !canViewMetrics) return
+        viewModelScope.launch {
+            _metricsLoading.value = true
+            _metrics.value = runCatching {
+                analyticsRepository.workerMetrics(accountId, scriptName, _range.value)
+            }.getOrNull()
+            // 趋势序列单独 runCatching，新字段失败不拖累摘要卡
+            _series.value = runCatching {
+                analyticsRepository.workerSeries(accountId, scriptName, _range.value)
+            }.getOrDefault(emptyList())
+            _metricsLoading.value = false
         }
     }
 }

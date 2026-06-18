@@ -1,6 +1,5 @@
 package jiamin.chen.orangecloud.core.design
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import java.time.LocalTime
 
-/** 当前晨昏相位（随系统深色 + 本地时刻）。 */
+/** 当前晨昏相位（随生效外观 LocalIsDark + 本地时刻；不直接读系统深色，避免与主题发散）。 */
 @Composable
 fun rememberSkyPhase(): SkyPhase {
-    val isDark = isSystemInDarkTheme()
+    val isDark = jiamin.chen.orangecloud.core.design.theme.LocalIsDark.current
     val hour = remember { LocalTime.now().hour }
     return remember(isDark, hour) { SkyPhase.current(isDark, hour) }
 }

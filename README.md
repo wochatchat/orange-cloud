@@ -10,7 +10,7 @@
 &nbsp;
 <a href="https://www.producthunt.com/products/orange-cloud?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-orange-cloud" target="_blank" rel="noopener noreferrer"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1173673&amp;theme=light&amp;t=1781641886373" alt="Orange Cloud - The open-source Cloudflare companion for power users | Product Hunt" height="54" /></a>
 
-[Website](https://orange-cloud.chatiro.app) · [Privacy](https://orange-cloud.chatiro.app/privacy) · [Terms](https://orange-cloud.chatiro.app/terms) · [TestFlight (beta)](https://testflight.apple.com/join/ZGhbsphj)
+[Website](https://orange-cloud.chatiro.app) · [Privacy](https://orange-cloud.chatiro.app/privacy) · [Terms](https://orange-cloud.chatiro.app/terms) · [TestFlight (beta)](https://testflight.apple.com/join/ZGhbsphj) · [Telegram](https://t.me/orange_cloud_channel)
 
 [English](#english) | [中文](#中文)
 
@@ -60,6 +60,10 @@ orange-cloud/
 ```
 
 > An **Android** client — native Kotlin + Jetpack Compose, same design and value as iOS — lives in [`apps/android/`](apps/android/README.md) and is in active development (not yet published to Google Play).
+
+### Community
+
+Follow the [Telegram channel](https://t.me/orange_cloud_channel) for release notes, news, and announcements.
 
 ### Building from source
 
@@ -114,6 +118,10 @@ orange-cloud/
 ```
 
 > **Android** 客户端——原生 Kotlin + Jetpack Compose，与 iOS 同源的设计与价值——位于 [`apps/android/`](apps/android/README.md)，正在开发中（尚未上架 Google Play）。
+
+### 社区
+
+关注 [Telegram 频道](https://t.me/orange_cloud_channel)，获取版本更新、项目动态与发布公告。
 
 ### 自行编译
 

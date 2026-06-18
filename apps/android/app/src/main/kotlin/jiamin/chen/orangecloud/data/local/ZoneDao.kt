@@ -13,6 +13,9 @@ interface ZoneDao {
     @Query("SELECT * FROM zones WHERE accountId = :accountId ORDER BY name COLLATE NOCASE")
     fun observeByAccount(accountId: String): Flow<List<ZoneEntity>>
 
+    @Query("SELECT * FROM zones WHERE id = :zoneId LIMIT 1")
+    fun observeById(zoneId: String): Flow<ZoneEntity?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(zones: List<ZoneEntity>)
 

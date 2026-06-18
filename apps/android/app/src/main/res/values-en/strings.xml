@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Orange Cloud</string>
+
+    <!-- Daybreak greetings -->
+    <string name="greeting_dawn">Good morning</string>
+    <string name="greeting_day">Good afternoon</string>
+    <string name="greeting_dusk">Good evening</string>
+    <string name="greeting_night">Good night</string>
+
+    <string name="login_cta">Sign in with Cloudflare</string>
+
+    <string name="default_account_label">Cloudflare account %1$d</string>
+
+    <string name="login_tagline">One-tap OAuth — no API tokens to paste</string>
+    <string name="login_subtitle">Cloudflare management client</string>
+    <string name="login_secure">Secure OAuth 2.0 · no API token pasting</string>
+    <string name="login_failed">Sign-in failed, please try again</string>
+    <string name="perm_count">%1$d modules selected</string>
+    <string name="perm_read">Read-only</string>
+    <string name="perm_write">Read &amp; write</string>
+
+    <!-- Permission selection -->
+    <string name="perm_title">Choose what to authorize</string>
+    <string name="perm_subtitle">Grant only what you need — adjust anytime by signing in again</string>
+    <string name="perm_continue">Continue</string>
+    <string name="perm_account">Account</string>
+    <string name="perm_account_desc">Read basic account info</string>
+    <string name="perm_zones">Domains (required)</string>
+    <string name="perm_zones_desc">View and manage domains</string>
+    <string name="perm_dns">DNS records</string>
+    <string name="perm_dns_desc">View and edit DNS records</string>
+    <string name="perm_workers">Workers</string>
+    <string name="perm_workers_desc">View Worker scripts</string>
+    <string name="perm_tail">Live logs</string>
+    <string name="perm_tail_desc">View Worker live logs</string>
+    <string name="perm_snippets">Snippets</string>
+    <string name="perm_snippets_desc">View and edit edge JS</string>
+    <string name="perm_r2">R2 storage</string>
+    <string name="perm_r2_desc">Browse buckets and objects</string>
+    <string name="perm_d1">D1 database</string>
+    <string name="perm_d1_desc">Query D1 databases</string>
+    <string name="perm_kv">KV storage</string>
+    <string name="perm_kv_desc">Read and write key-values</string>
+    <string name="perm_tunnels">Tunnels</string>
+    <string name="perm_tunnels_desc">View Cloudflare Tunnel</string>
+    <string name="perm_waf">WAF</string>
+    <string name="perm_waf_desc">View and toggle firewall rules</string>
+    <string name="perm_zone_settings">Domain settings</string>
+    <string name="perm_zone_settings_desc">Dev mode · security level · purge cache</string>
+    <string name="perm_analytics">Analytics</string>
+    <string name="perm_analytics_desc">View traffic and usage stats</string>
+
+    <!-- Navigation -->
+    <string name="nav_zones">Domains</string>
+    <string name="nav_settings">Settings</string>
+
+    <!-- Domain list -->
+    <string name="zones_title">Domains</string>
+    <string name="zones_subtitle">%1$d domains · %2$d active</string>
+    <string name="zones_empty">No domains yet</string>
+    <string name="zones_pick_hint">Select a domain to see details</string>
+
+    <!-- Common -->
+    <string name="common_refresh">Refresh</string>
+    <string name="common_back">Back</string>
+    <string name="error_generic">Something went wrong, try again</string>
+    <string name="scope_missing">More permissions needed. Go to Settings, sign out, then sign in again to grant access for this feature.</string>
+    <string name="common_loading">Loading…</string>
+    <string name="common_load_more">Load more</string>
+
+    <!-- Storage -->
+    <string name="nav_storage">Storage</string>
+    <string name="storage_r2">R2 buckets</string>
+    <string name="storage_d1">D1 databases</string>
+    <string name="storage_kv">KV namespaces</string>
+    <string name="r2_empty">No buckets yet</string>
+    <string name="r2_objects_empty">This bucket is empty</string>
+    <string name="r2_upload">Upload</string>
+    <string name="r2_uploaded">Uploaded</string>
+    <string name="r2_deleted">Deleted</string>
+    <string name="r2_delete">Delete object</string>
+    <string name="r2_download_open">Download &amp; open</string>
+    <string name="r2_no_app">No app can open this file</string>
+    <string name="r2_meta_size">Size</string>
+    <string name="r2_meta_type">Content-Type</string>
+    <string name="r2_meta_class">Storage class</string>
+    <string name="r2_meta_etag">ETag</string>
+    <string name="r2_meta_modified">Modified</string>
+    <string name="d1_empty">No databases yet</string>
+    <string name="d1_tables">%1$d tables</string>
+    <string name="d1_sql">SQL statement</string>
+    <string name="d1_run">Run</string>
+    <string name="d1_ok">Success, %1$d rows affected</string>
+    <string name="d1_tables_section">Tables</string>
+    <string name="d1_table_empty">No data in this table yet</string>
+    <string name="d1_row_tap_edit">Tap a row to edit.</string>
+    <string name="d1_row_readonly_hint">Current authorization is read-only (d1.read).</string>
+    <string name="d1_row_edit_title">Edit row</string>
+    <string name="d1_row_changed_only">Only changed columns are submitted. Leave a NULL column empty to keep it NULL.</string>
+    <string name="d1_row_delete">Delete this row</string>
+    <string name="d1_row_readonly">Current authorization doesn\'t include D1 write access (d1.write).</string>
+    <string name="kv_empty">No namespaces yet</string>
+    <string name="kv_keys_empty">No keys in this namespace</string>
+    <string name="kv_add">Add key</string>
+    <string name="kv_key">Key</string>
+    <string name="kv_value">Value</string>
+    <string name="kv_new_key">New key</string>
+    <string name="kv_edit_key">Edit key</string>
+    <string name="kv_saved">Saved</string>
+    <string name="kv_readonly">Read-only: KV write access not granted</string>
+
+    <!-- DNS records -->
+    <string name="dns_title_fallback">DNS records</string>
+    <string name="dns_empty">No DNS records yet</string>
+    <string name="dns_add">Add record</string>
+    <string name="dns_readonly">Read-only: DNS edit access not granted</string>
+    <string name="dns_proxied">Proxied through Cloudflare</string>
+    <string name="dns_dns_only">DNS only (not proxied)</string>
+    <string name="dns_saved">Saved</string>
+    <string name="dns_deleted">Deleted</string>
+    <string name="dns_new_title">New record</string>
+    <string name="dns_edit_title">Edit record</string>
+    <string name="dns_field_type">Type</string>
+    <string name="dns_field_name">Name</string>
+    <string name="dns_field_content">Content</string>
+    <string name="dns_field_proxy">Proxy through Cloudflare</string>
+    <string name="dns_field_ttl">TTL</string>
+    <string name="dns_field_priority">Priority</string>
+    <string name="dns_field_comment">Comment (optional)</string>
+    <string name="dns_save">Save</string>
+    <string name="dns_delete">Delete</string>
+    <string name="dns_cancel">Cancel</string>
+    <string name="dns_delete_confirm_title">Delete this record?</string>
+    <string name="dns_delete_confirm_msg">Deleting “%1$s” can\'t be undone.</string>
+
+    <!-- DNS content hints -->
+    <string name="dns_hint_a">IPv4 address, e.g. 203.0.113.1</string>
+    <string name="dns_hint_aaaa">IPv6 address, e.g. 2001:db8::1</string>
+    <string name="dns_hint_cname">Target domain, e.g. example.com</string>
+    <string name="dns_hint_txt">Text content</string>
+    <string name="dns_hint_mx">Mail server, e.g. mail.example.com</string>
+    <string name="dns_hint_ns">Name server domain</string>
+
+    <!-- TTL options -->
+    <string name="ttl_auto">Auto</string>
+    <string name="ttl_1m">1 minute</string>
+    <string name="ttl_5m">5 minutes</string>
+    <string name="ttl_30m">30 minutes</string>
+    <string name="ttl_1h">1 hour</string>
+    <string name="ttl_1d">1 day</string>
+
+    <!-- Toggle states -->
+    <string name="common_on">On</string>
+    <string name="common_off">Off</string>
+
+    <!-- Workers -->
+    <string name="nav_workers">Workers</string>
+    <string name="workers_empty">No Worker scripts yet</string>
+    <string name="worker_usage_model">Usage model</string>
+    <string name="worker_logpush">Logpush</string>
+    <string name="worker_created">Created</string>
+    <string name="worker_modified">Modified</string>
+    <string name="worker_handlers">Handlers</string>
+    <string name="worker_metrics_24h">Last 24 hours</string>
+    <string name="worker_metric_requests">Requests</string>
+    <string name="worker_metric_errors">Errors</string>
+    <string name="worker_metric_subrequests">Subrequests</string>
+    <string name="worker_metric_error_rate">Error rate</string>
+    <string name="worker_metric_cpu">CPU per call</string>
+    <string name="worker_status_title">Invocation status</string>
+    <string name="worker_status_success">Success</string>
+    <string name="worker_status_exception">Script exception</string>
+    <string name="worker_status_cpu">CPU limit exceeded</string>
+    <string name="worker_status_memory">Memory limit exceeded</string>
+    <string name="worker_status_client_disconnect">Client disconnected</string>
+    <string name="worker_status_canceled">Canceled</string>
+    <string name="worker_status_stream_disconnect">Response stream disconnected</string>
+
+    <!-- Worker live logs (tail) -->
+    <string name="tail_title">Live logs</string>
+    <string name="tail_connecting">Connecting…</string>
+    <string name="tail_connected">Connected</string>
+    <string name="tail_disconnected">Disconnected</string>
+    <string name="tail_waiting">Waiting for logs… they appear live once the Worker is triggered</string>
+    <string name="tail_pause">Pause</string>
+    <string name="tail_resume">Resume</string>
+    <string name="tail_clear">Clear</string>
+    <string name="tail_reconnect">Reconnect</string>
+    <string name="tail_events">%1$d events</string>
+
+    <!-- Domain detail / tools -->
+    <string name="zone_status_active">Active</string>
+    <string name="zone_status_pending">Pending</string>
+    <string name="zone_status_paused">Paused</string>
+    <string name="zone_name_servers">Name Servers</string>
+    <string name="zone_id_label">Zone ID</string>
+    <string name="zone_tool_dns">DNS records</string>
+    <string name="zone_tool_analytics">Analytics</string>
+    <string name="zone_tool_waf">WAF rules</string>
+    <string name="zone_tool_snippets">Snippets</string>
+    <string name="zone_tool_settings">Settings</string>
+
+    <!-- Domain settings -->
+    <string name="zs_title">Domain settings</string>
+    <string name="zs_dev_mode">Development mode</string>
+    <string name="zs_dev_mode_desc">Temporarily bypass cache, auto-off after 3 hours</string>
+    <string name="zs_under_attack">“I\'m Under Attack” mode</string>
+    <string name="zs_under_attack_desc">Show a challenge page to all visitors</string>
+    <string name="zs_purge">Purge everything</string>
+    <string name="zs_purged">Cache purged</string>
+    <string name="zs_purge_confirm_title">Purge all cache?</string>
+    <string name="zs_purge_confirm_msg">This clears all cached content for this domain at Cloudflare\'s edge and may briefly raise origin load.</string>
+
+    <!-- Snippets -->
+    <string name="snippets_title">Snippets</string>
+    <string name="snippets_empty">No snippets yet</string>
+    <string name="snippets_new">New snippet</string>
+    <string name="snippets_name">Name (letters, digits, underscore)</string>
+    <string name="snippets_code">JavaScript code</string>
+    <string name="snippets_readonly">Read-only: Snippets write access not granted</string>
+    <string name="snippets_rules">Triggers (%1$d)</string>
+
+    <!-- Overview / network -->
+    <string name="nav_dashboard">Overview</string>
+    <string name="dashboard_accounts">Accounts</string>
+    <string name="dashboard_network">Network</string>
+    <string name="dashboard_greeting">Hi,</string>
+    <string name="dash_sub_zones">Total domains</string>
+    <string name="dash_sub_workers">Workers</string>
+    <string name="dash_buckets">Buckets</string>
+    <string name="dash_sub_buckets">R2 buckets</string>
+    <string name="dash_requests">Requests</string>
+    <string name="dash_sub_requests">Requests today</string>
+    <string name="dash_recent">Recent</string>
+    <string name="dash_view_all">View all</string>
+    <string name="dash_quick">Quick actions</string>
+    <string name="dash_refresh">Refresh status</string>
+    <string name="dash_switch_account">Switch account</string>
+    <string name="dash_add_account">Add account</string>
+
+    <!-- WAF -->
+    <string name="waf_title">WAF rules</string>
+    <string name="waf_empty">No custom firewall rules yet</string>
+    <string name="waf_readonly">Read-only: WAF write access not granted</string>
+    <string name="waf_action_block">Block</string>
+    <string name="waf_action_challenge">Challenge</string>
+    <string name="waf_action_managed_challenge">Managed Challenge</string>
+    <string name="waf_action_js_challenge">JS Challenge</string>
+    <string name="waf_action_log">Log</string>
+    <string name="waf_action_allow">Skip</string>
+    <string name="waf_action_other">Rule</string>
+    <string name="waf_add_title">New rule</string>
+    <string name="waf_field_name">Rule name</string>
+    <string name="waf_field_action">Action</string>
+    <string name="waf_field_expression">Expression</string>
+    <string name="waf_field_enabled">Enabled</string>
+    <string name="waf_expression_hint">Cloudflare Rules language, e.g. (http.request.uri.path contains \"/admin\")</string>
+    <string name="waf_saved">Saved</string>
+    <string name="waf_deleted">Deleted</string>
+    <string name="waf_delete_confirm_title">Delete this rule?</string>
+    <string name="waf_delete_confirm_msg">This can\'t be undone; the rule stops applying immediately.</string>
+
+    <!-- Tunnel -->
+    <string name="tunnel_title">Tunnels</string>
+    <string name="tunnel_empty">No tunnels yet</string>
+    <string name="tunnel_connections">%1$d active connections</string>
+    <string name="tunnel_status_healthy">Healthy</string>
+    <string name="tunnel_status_degraded">Degraded</string>
+    <string name="tunnel_status_down">Down</string>
+    <string name="tunnel_status_inactive">Inactive</string>
+    <string name="tunnel_status_unknown">Unknown</string>
+    <string name="tunnel_section_info">Info</string>
+    <string name="tunnel_section_connections">Active connections</string>
+    <string name="tunnel_field_status">Status</string>
+    <string name="tunnel_field_type">Type</string>
+    <string name="tunnel_field_config">Configuration</string>
+    <string name="tunnel_config_remote">Remote (Dashboard)</string>
+    <string name="tunnel_config_local">Local (config.yml)</string>
+    <string name="tunnel_field_created">Created</string>
+    <string name="tunnel_field_id">Tunnel ID</string>
+    <string name="tunnel_no_connections">No active connections</string>
+    <string name="tunnel_unknown_colo">Unknown colo</string>
+
+    <!-- Analytics -->
+    <string name="analytics_title">Analytics</string>
+    <string name="analytics_requests">Requests</string>
+    <string name="analytics_bandwidth">Bandwidth</string>
+    <string name="analytics_uniques">Unique visitors</string>
+    <string name="analytics_cache_hit">Cache hit rate</string>
+    <string name="analytics_empty">No data for this period</string>
+    <string name="range_24h">24h</string>
+    <string name="range_7d">7d</string>
+    <string name="range_30d">30d</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_logout">Sign out</string>
+    <string name="settings_scopes">%1$d permissions granted</string>
+    <string name="settings_accounts">Cloudflare accounts</string>
+    <string name="settings_accounts_footer">Secure sign-in via OAuth 2.0 — no API tokens to paste. Tap an account to view permissions or sign out.</string>
+    <string name="settings_current">Current</string>
+    <string name="settings_pro">Orange Cloud Pro</string>
+    <string name="settings_pro_unlocked">All features unlocked</string>
+    <string name="settings_pro_sub">Unlock multiple accounts, storage, live logs and advanced analytics</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_appearance_system">Follow system</string>
+    <string name="settings_appearance_light">Light</string>
+    <string name="settings_appearance_dark">Dark</string>
+    <string name="settings_notif">Notifications</string>
+    <string name="settings_notif_master">Allow notifications</string>
+    <string name="settings_notif_zone">Domain status changes</string>
+    <string name="settings_notif_worker">Worker error alerts</string>
+    <string name="settings_notif_footer_on">Important changes are pushed during background refresh.</string>
+    <string name="settings_notif_footer_off">Turn on to get alerts when a domain\'s status changes or a Worker errors.</string>
+    <string name="settings_service">Service status</string>
+    <string name="settings_service_footer">Check the live status of Cloudflare\'s components.</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_rate">Rate the app</string>
+    <string name="settings_github">View source on GitHub</string>
+    <string name="settings_privacy">Privacy Policy</string>
+    <string name="settings_terms">Terms of Use</string>
+    <string name="settings_about_footer">Orange Cloud · third-party Cloudflare client</string>
+
+    <!-- Account detail -->
+    <string name="identity_title">Account</string>
+    <string name="identity_not_found">This account no longer exists</string>
+    <string name="identity_oauth_badge">OAuth 2.0</string>
+    <string name="identity_current">Currently active account</string>
+    <string name="identity_switch">Switch to this account</string>
+    <string name="identity_section_current">Current identity</string>
+    <string name="identity_section_perms">Granted permissions</string>
+    <string name="identity_perm_readwrite">Read &amp; write</string>
+    <string name="identity_perm_readonly">Read-only</string>
+    <string name="identity_logout_confirm_title">Sign out of this account?</string>
+    <string name="identity_logout_confirm_msg">This removes the account\'s sign-in from this device. You can sign in again anytime.</string>
+    <string name="identity_logout_confirm_msg_last">This is your last account; signing out returns you to the login screen.</string>
+
+    <string name="common_cancel">Cancel</string>
+
+    <!-- Cloudflare status page -->
+    <string name="status_title">Cloudflare Status</string>
+    <string name="status_none">All systems operational</string>
+    <string name="status_minor">Minor service issues</string>
+    <string name="status_major">Major service issues</string>
+    <string name="status_critical">Major outage</string>
+    <string name="status_maintenance">Maintenance in progress</string>
+    <string name="status_section_active">Active incidents</string>
+    <string name="status_section_maintenance">Scheduled maintenance</string>
+    <string name="status_section_products">Products &amp; services</string>
+    <string name="status_section_edge">Edge network</string>
+    <string name="status_section_recent">Recent incidents</string>
+    <string name="status_products_all_ok">All %1$d products operational</string>
+    <string name="status_region_all_ok">All operational</string>
+    <string name="status_region_impacted">%1$d locations impacted</string>
+    <string name="status_full_page">View full status on cloudflarestatus.com</string>
+    <string name="status_comp_operational">Operational</string>
+    <string name="status_comp_degraded">Degraded performance</string>
+    <string name="status_comp_partial">Partial outage</string>
+    <string name="status_comp_major">Major outage</string>
+    <string name="status_comp_maintenance">Under maintenance</string>
+    <string name="status_inc_investigating">Investigating</string>
+    <string name="status_inc_identified">Identified</string>
+    <string name="status_inc_monitoring">Monitoring</string>
+    <string name="status_inc_resolved">Resolved</string>
+    <string name="status_inc_postmortem">Postmortem</string>
+    <string name="status_inc_scheduled">Scheduled</string>
+    <string name="status_inc_in_progress">In progress</string>
+    <string name="status_inc_verifying">Verifying</string>
+    <string name="status_inc_completed">Completed</string>
+    <string name="status_impact_critical">Critical</string>
+    <string name="status_impact_major">Major</string>
+    <string name="status_impact_minor">Minor</string>
+    <string name="status_impact_maintenance">Maintenance</string>
+    <string name="status_impact_none">No impact</string>
+    <string name="status_region_africa">Africa</string>
+    <string name="status_region_asia">Asia</string>
+    <string name="status_region_europe">Europe</string>
+    <string name="status_region_latam">Latin America &amp; Caribbean</string>
+    <string name="status_region_middle_east">Middle East</string>
+    <string name="status_region_north_america">North America</string>
+    <string name="status_region_oceania">Oceania</string>
+    <string name="status_detail_status">Status</string>
+    <string name="status_detail_impact">Impact</string>
+    <string name="status_detail_started">Started</string>
+    <string name="status_detail_open">Open on status page</string>
+    <string name="status_detail_updates">Updates</string>
+    <string name="status_time_just_now">Just now</string>
+    <string name="status_time_minutes">%1$d min ago</string>
+    <string name="status_time_hours">%1$d h ago</string>
+    <string name="status_time_days">%1$d d ago</string>
+
+    <!-- What\'s New -->
+    <string name="whatsnew_title">What\'s New</string>
+    <string name="whatsnew_ok">Got it</string>
+    <string name="whatsnew_1_0_oauth_title">One-tap OAuth sign-in</string>
+    <string name="whatsnew_1_0_oauth_detail">Sign in with Cloudflare\'s official authorization — no API tokens to paste.</string>
+    <string name="whatsnew_1_0_modules_title">Domains · Workers · Storage</string>
+    <string name="whatsnew_1_0_modules_detail">DNS, analytics, WAF, Snippets, Workers live logs, and R2/D1/KV storage — all in one place.</string>
+
+    <!-- Paywall -->
+    <string name="paywall_title">Orange Cloud Pro</string>
+    <string name="paywall_subtitle">Unlock all premium features</string>
+    <string name="paywall_feat_multi">Multi-account management</string>
+    <string name="paywall_feat_storage">R2 / D1 / KV storage</string>
+    <string name="paywall_feat_tail">Workers live logs</string>
+    <string name="paywall_feat_security">WAF rules &amp; Tunnel</string>
+    <string name="paywall_feat_analytics">7-day / 30-day analytics</string>
+    <string name="paywall_unlock">Unlock Pro</string>
+    <string name="paywall_yearly">Yearly</string>
+    <string name="paywall_monthly">Monthly</string>
+    <string name="paywall_lifetime">Lifetime</string>
+    <string name="paywall_note">Billed via Google Play, cancel anytime.</string>
+</resources>
