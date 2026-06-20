@@ -18,7 +18,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Public
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,6 +45,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -66,6 +72,9 @@ import java.time.format.FormatStyle
 fun WorkerDetailScreen(
     onBack: () -> Unit,
     onOpenTail: () -> Unit,
+    onOpenSecrets: () -> Unit = {},
+    onOpenTriggers: () -> Unit = {},
+    onOpenDomains: () -> Unit = {},
     viewModel: WorkerDetailViewModel = hiltViewModel(),
 ) {
     val worker by viewModel.worker.collectAsStateWithLifecycle()
@@ -100,6 +109,19 @@ fun WorkerDetailScreen(
                     Icon(Icons.Outlined.Terminal, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.tail_title))
+                }
+
+                // 管理：变量与密钥 / 触发器 / 域名（各页 Pro 闸门）
+                Surface(
+                    color = MaterialTheme.colorScheme.surfaceContainerLow,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(vertical = 4.dp)) {
+                        ManageRow(Icons.Outlined.Key, stringResource(R.string.worker_manage_secrets), onOpenSecrets)
+                        ManageRow(Icons.Outlined.Schedule, stringResource(R.string.worker_manage_triggers), onOpenTriggers)
+                        ManageRow(Icons.Outlined.Public, stringResource(R.string.worker_manage_domains), onOpenDomains)
+                    }
                 }
 
                 if (viewModel.canViewMetrics) {
@@ -184,6 +206,23 @@ fun WorkerDetailScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ManageRow(icon: ImageVector, label: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, tint = OcOrange, modifier = Modifier.size(22.dp))
+        Spacer(Modifier.width(14.dp))
+        Text(label, fontSize = 15.sp, color = MaterialTheme.colorScheme.onSurface, modifier = Modifier.weight(1f))
+        Icon(
+            Icons.AutoMirrored.Outlined.KeyboardArrowRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

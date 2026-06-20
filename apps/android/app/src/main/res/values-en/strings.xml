@@ -43,7 +43,7 @@
     <string name="perm_kv">KV storage</string>
     <string name="perm_kv_desc">Read and write key-values</string>
     <string name="perm_tunnels">Tunnels</string>
-    <string name="perm_tunnels_desc">View Cloudflare Tunnel</string>
+    <string name="perm_tunnels_desc">View tunnels; with write access, create tunnels and configure public hostname routes</string>
     <string name="perm_waf">WAF</string>
     <string name="perm_waf_desc">View and toggle firewall rules</string>
     <string name="perm_zone_settings">Domain settings</string>
@@ -394,10 +394,6 @@
     <!-- What\'s New -->
     <string name="whatsnew_title">What\'s New</string>
     <string name="whatsnew_ok">Got it</string>
-    <string name="whatsnew_1_0_oauth_title">One-tap OAuth sign-in</string>
-    <string name="whatsnew_1_0_oauth_detail">Sign in with Cloudflare\'s official authorization — no API tokens to paste.</string>
-    <string name="whatsnew_1_0_modules_title">Domains · Workers · Storage</string>
-    <string name="whatsnew_1_0_modules_detail">DNS, analytics, WAF, Snippets, Workers live logs, and R2/D1/KV storage — all in one place.</string>
 
     <!-- Paywall -->
     <string name="paywall_title">Orange Cloud Pro</string>
@@ -412,4 +408,154 @@
     <string name="paywall_monthly">Monthly</string>
     <string name="paywall_lifetime">Lifetime</string>
     <string name="paywall_note">Billed via Google Play, cancel anytime.</string>
+
+
+    <!-- Add domain -->
+    <string name="addzone_title">Add domain</string>
+    <string name="addzone_domain_label">Domain</string>
+    <string name="addzone_domain_hint">Enter a root domain you already own (e.g. example.com), without www or https://.</string>
+    <string name="addzone_account">Add to account: %1$s</string>
+    <string name="addzone_ns_note">After adding, Cloudflare assigns two nameservers. Sign in to your registrar and switch the NS to them to activate the domain.</string>
+    <string name="addzone_add">Add</string>
+    <string name="addzone_pending">Pending activation</string>
+    <string name="addzone_ns_title">Nameservers</string>
+    <string name="addzone_copy">Copy nameservers</string>
+    <string name="addzone_copied">Copied</string>
+    <string name="addzone_steps_title">Next steps</string>
+    <string name="addzone_step1">Sign in to the registrar where you bought this domain.</string>
+    <string name="addzone_step2">Find the “Nameservers” setting.</string>
+    <string name="addzone_step3">Remove the existing nameservers and replace them with the two Cloudflare addresses above.</string>
+    <string name="addzone_step4">Save changes. Activation usually takes minutes to hours, up to 24 hours.</string>
+    <string name="addzone_done">Done</string>
+    <string name="addzone_ns_missing">Cloudflare hasn’t returned nameservers yet. Check the domain details or the Cloudflare dashboard later.</string>
+
+    <!-- D1 create / delete -->
+    <string name="d1_create_title">Create database</string>
+    <string name="d1_create">Create</string>
+    <string name="d1_created">Created</string>
+    <string name="d1_name">Database name</string>
+    <string name="d1_location">Primary location</string>
+    <string name="d1_location_hint">The primary location sets where the primary replica lives. Choose “Automatic” to let Cloudflare place it nearby.</string>
+    <string name="d1_loc_auto">Automatic</string>
+    <string name="d1_loc_wnam">Western North America</string>
+    <string name="d1_loc_enam">Eastern North America</string>
+    <string name="d1_loc_weur">Western Europe</string>
+    <string name="d1_loc_eeur">Eastern Europe</string>
+    <string name="d1_loc_apac">Asia-Pacific</string>
+    <string name="d1_loc_oc">Oceania</string>
+    <string name="d1_delete_title">Delete database</string>
+    <string name="d1_delete_warn">This permanently deletes the database %1$s and all its tables and data. This cannot be undone or recovered.</string>
+    <string name="d1_delete_confirm_label">Type the database name to confirm</string>
+    <string name="d1_delete_button">Delete permanently</string>
+
+    <!-- Worker management -->
+    <string name="worker_manage_secrets">Variables &amp; secrets</string>
+    <string name="worker_manage_triggers">Triggers</string>
+    <string name="worker_manage_domains">Domains</string>
+    <string name="worker_secrets_title">Variables &amp; secrets</string>
+    <string name="worker_secrets_section">Secrets</string>
+    <string name="worker_secrets_empty">No secrets</string>
+    <string name="worker_secrets_add">Add secret</string>
+    <string name="worker_secrets_footer">Secret values can’t be read for security; the list shows names only. Adding the same name overwrites it.</string>
+    <string name="worker_secrets_readonly">Read-only with the current authorization (missing workers-scripts.write).</string>
+    <string name="worker_vars_section">Environment variables</string>
+    <string name="worker_vars_empty">No variables</string>
+    <string name="worker_vars_add">Add variable</string>
+    <string name="worker_vars_footer">Plain-text variables, readable and editable. Editing one doesn’t affect other bindings.</string>
+    <string name="worker_var_add_title">Add variable</string>
+    <string name="worker_var_edit_title">Edit variable</string>
+    <string name="worker_secret_add_title">Add secret</string>
+    <string name="worker_binding_name">Name</string>
+    <string name="worker_binding_name_hint">Letters, digits, underscore; must not start with a digit.</string>
+    <string name="worker_binding_value">Value</string>
+    <string name="worker_secret_value">Value (cannot be read after saving)</string>
+    <string name="worker_other_section">Other bindings (read-only)</string>
+    <string name="worker_other_footer">KV / D1 / R2 and other resource bindings are shown here; edit them with Wrangler or the dashboard.</string>
+    <string name="worker_bind_var">Variable</string>
+    <string name="worker_bind_secret">Secret</string>
+    <string name="worker_bind_queue">Queue</string>
+    <string name="worker_bind_service">Service binding</string>
+    <string name="worker_bind_browser">Browser Rendering</string>
+    <string name="worker_triggers_title">Triggers</string>
+    <string name="worker_triggers_empty_desc">Add a cron expression to run this Worker on a schedule.</string>
+    <string name="worker_triggers_add">Add trigger</string>
+    <string name="worker_triggers_footer">Cron runs in UTC.</string>
+    <string name="worker_cron_expr">Cron expression</string>
+    <string name="worker_cron_hint">Standard 5 fields: minute hour day month weekday (UTC).</string>
+    <string name="worker_cron_presets">Common</string>
+    <string name="worker_cron_5m">Every 5 minutes</string>
+    <string name="worker_cron_hourly">Every hour</string>
+    <string name="worker_cron_daily">Daily at 00:00 (UTC)</string>
+    <string name="worker_cron_weekly">Mondays at 00:00 (UTC)</string>
+    <string name="worker_cron_every_n">Every %1$d minutes</string>
+    <string name="worker_cron_desc_hourly">Every hour</string>
+    <string name="worker_cron_desc_daily">Daily at %1$s (UTC)</string>
+    <string name="worker_cron_custom">Custom cron (UTC)</string>
+    <string name="worker_domains_title">Domains</string>
+    <string name="worker_subdomain_section">workers.dev</string>
+    <string name="worker_subdomain_label">workers.dev subdomain</string>
+    <string name="worker_subdomain_footer">When enabled, the Worker is reachable at script.subdomain.workers.dev.</string>
+    <string name="worker_subdomain_none">workers.dev subdomain isn’t enabled for this account</string>
+    <string name="worker_customdomains_section">Custom domains</string>
+    <string name="worker_customdomains_empty">No custom domains</string>
+    <string name="worker_customdomains_add">Attach custom domain</string>
+    <string name="worker_customdomains_footer">Point a domain/subdomain straight at this Worker, no DNS or certificate setup needed.</string>
+    <string name="worker_routes_section">Routes</string>
+    <string name="worker_routes_empty">No routes</string>
+    <string name="worker_routes_add">Add route</string>
+    <string name="worker_routes_footer">Use a URL pattern (e.g. example.com/api/*) to send matching requests to this Worker.</string>
+    <string name="worker_route_zone">Domain</string>
+    <string name="worker_route_zone_pick">Select</string>
+    <string name="worker_domain_hostname">Hostname</string>
+    <string name="worker_domain_hostname_hint">Full hostname; must belong to the selected domain.</string>
+    <string name="worker_route_pattern">Route pattern</string>
+    <string name="worker_route_pattern_hint">URL pattern, wildcards allowed, e.g. example.com/*.</string>
+    <string name="worker_attach_domain_title">Attach custom domain</string>
+    <string name="worker_add_route_title">Add route</string>
+
+    <!-- Tunnel management -->
+    <string name="tunnel_new">New tunnel</string>
+    <string name="tunnel_new_name">Tunnel name</string>
+    <string name="tunnel_new_footer">Creates a remotely-managed tunnel (configured via the dashboard / this app).</string>
+    <string name="tunnel_create">Create</string>
+    <string name="tunnel_connect_section">Run command</string>
+    <string name="tunnel_connect_intro">Install cloudflared on the target machine and run the command below as an administrator to connect the tunnel.</string>
+    <string name="tunnel_connect_reveal">Show token</string>
+    <string name="tunnel_connect_hide">Hide token</string>
+    <string name="tunnel_connect_copy">Copy command</string>
+    <string name="tunnel_connect_copied">Command copied</string>
+    <string name="tunnel_connect_token_warn">The token is equivalent to tunnel credentials. Keep it safe and don’t share it publicly.</string>
+    <string name="tunnel_connect_loading">Fetching token…</string>
+    <string name="tunnel_connect_failed">Couldn’t fetch token</string>
+    <string name="tunnel_hostnames_section">Public hostnames</string>
+    <string name="tunnel_hostnames_empty">No public hostnames yet. Add one below.</string>
+    <string name="tunnel_hostnames_empty_ro">No public hostnames yet.</string>
+    <string name="tunnel_hostnames_add">Add public hostname</string>
+    <string name="tunnel_hostnames_footer">Map a public domain to a local service. A proxied CNAME is created automatically when you add one.</string>
+    <string name="tunnel_hostnames_loading">Loading configuration…</string>
+    <string name="tunnel_local_note">This tunnel is locally managed (config.yml); manage public hostnames in the cloudflared config file.</string>
+    <string name="tunnel_danger_section">Danger zone</string>
+    <string name="tunnel_cleanup">Clean up stale connections</string>
+    <string name="tunnel_cleanup_confirm_title">Clean up connections</string>
+    <string name="tunnel_cleanup_confirm_msg">Removes disconnected connection records; active cloudflared instances reconnect automatically.</string>
+    <string name="tunnel_delete">Delete tunnel</string>
+    <string name="tunnel_delete_confirm_title">Delete tunnel</string>
+    <string name="tunnel_delete_confirm_msg">This deletes the tunnel and drops its connections. This cannot be undone.</string>
+    <string name="tunnel_host_form_add">Add public hostname</string>
+    <string name="tunnel_host_form_edit">Edit public hostname</string>
+    <string name="tunnel_host_hostname">Public hostname</string>
+    <string name="tunnel_host_protocol">Protocol</string>
+    <string name="tunnel_host_service">Local service</string>
+    <string name="tunnel_host_service_footer">cloudflared forwards requests for this hostname to this local address.</string>
+    <string name="tunnel_host_service_other">Full service address, e.g. unix:/path.sock</string>
+    <string name="tunnel_host_path">Path</string>
+    <string name="tunnel_host_path_hint">Path regex (optional), e.g. /api/.*</string>
+    <string name="tunnel_proto_other">Other</string>
+
+    <!-- Help &amp; feedback -->
+    <string name="settings_help">Help &amp; feedback</string>
+    <string name="settings_help_footer">Feedback and suggestions are sent to our email with version and device info (no tokens or secrets).</string>
+    <string name="settings_feedback">Send feedback</string>
+    <string name="feedback_subject">Orange Cloud feedback</string>
+    <string name="feedback_no_mail">No email app found</string>
 </resources>

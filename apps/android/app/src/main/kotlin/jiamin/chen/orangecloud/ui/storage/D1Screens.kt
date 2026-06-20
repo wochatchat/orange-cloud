@@ -2,6 +2,7 @@ package jiamin.chen.orangecloud.ui.storage
 
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,21 +15,30 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.TableRows
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -44,8 +54,10 @@ import jiamin.chen.orangecloud.core.design.SkyHeader
 import jiamin.chen.orangecloud.core.design.onSky
 import jiamin.chen.orangecloud.core.design.rememberSkyPhase
 import jiamin.chen.orangecloud.core.design.theme.OcOrange
+import jiamin.chen.orangecloud.data.model.D1Database
 import jiamin.chen.orangecloud.data.model.tailDisplayText
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun D1DatabaseListScreen(
     onBack: () -> Unit,
@@ -53,34 +65,83 @@ fun D1DatabaseListScreen(
     viewModel: D1DatabaseListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val opState by viewModel.opState.collectAsStateWithLifecycle()
     val phase = rememberSkyPhase()
     val onSky = phase.onSky
+    val snackbarHostState = remember { SnackbarHostState() }
+    var showCreate by remember { mutableStateOf(false) }
+    var toDelete by remember { mutableStateOf<D1Database?>(null) }
+    val createSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val createdMsg = stringResource(R.string.d1_created)
+    val deletedMsg = stringResource(R.string.dns_deleted)
+    val errMsg = stringResource(R.string.error_generic)
 
-    SkyBackground(phase = phase) {
-        Column(Modifier.fillMaxSize().systemBarsPadding()) {
-            SkyHeader(
-                title = stringResource(R.string.storage_d1),
-                onSky = onSky,
-                isLoading = state.isLoading,
-                onRefresh = { viewModel.load() },
-                onBack = onBack,
-                titleSize = 22,
-                backDescription = stringResource(R.string.common_back),
-                refreshDescription = stringResource(R.string.common_refresh),
-            )
-            StorageListBody(state, onSky, Icons.Outlined.Storage, stringResource(R.string.d1_empty), { viewModel.load() }) { db ->
-                val subtitle = listOfNotNull(
-                    db.fileSize?.let { formatBytes(it) },
-                    db.numTables?.let { stringResource(R.string.d1_tables, it) },
-                ).joinToString(" · ").ifEmpty { null }
-                StorageRow(
-                    Icons.Outlined.Storage,
-                    db.name,
-                    subtitle,
-                    onClick = { onOpenDatabase(db.uuid, db.name) },
-                )
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                D1DbEvent.Created -> { showCreate = false; snackbarHostState.showSnackbar(createdMsg) }
+                D1DbEvent.Deleted -> { toDelete = null; snackbarHostState.showSnackbar(deletedMsg) }
+                is D1DbEvent.Error -> snackbarHostState.showSnackbar(event.message ?: errMsg)
             }
         }
+    }
+
+    SkyBackground(phase = phase) {
+        Box(Modifier.fillMaxSize().systemBarsPadding()) {
+            Column(Modifier.fillMaxSize()) {
+                SkyHeader(
+                    title = stringResource(R.string.storage_d1),
+                    onSky = onSky,
+                    isLoading = state.isLoading,
+                    onRefresh = { viewModel.load() },
+                    onBack = onBack,
+                    titleSize = 22,
+                    backDescription = stringResource(R.string.common_back),
+                    refreshDescription = stringResource(R.string.common_refresh),
+                )
+                StorageListBody(state, onSky, Icons.Outlined.Storage, stringResource(R.string.d1_empty), { viewModel.load() }) { db ->
+                    val subtitle = listOfNotNull(
+                        db.fileSize?.let { formatBytes(it) },
+                        db.numTables?.let { stringResource(R.string.d1_tables, it) },
+                    ).joinToString(" · ").ifEmpty { null }
+                    StorageRow(
+                        Icons.Outlined.Storage,
+                        db.name,
+                        subtitle,
+                        onClick = { onOpenDatabase(db.uuid, db.name) },
+                        onLongClick = if (viewModel.canWrite) ({ toDelete = db }) else null,
+                    )
+                }
+            }
+            if (viewModel.canWrite) {
+                FloatingActionButton(
+                    onClick = { showCreate = true },
+                    containerColor = OcOrange,
+                    contentColor = Color.White,
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(20.dp),
+                ) {
+                    Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.d1_create_title))
+                }
+            }
+            SnackbarHost(snackbarHostState, modifier = Modifier.align(Alignment.BottomCenter))
+        }
+    }
+
+    if (showCreate) {
+        D1CreateSheet(
+            isCreating = opState.isCreating,
+            sheetState = createSheetState,
+            onCreate = { name, hint -> viewModel.create(name, hint) },
+            onDismiss = { showCreate = false },
+        )
+    }
+    toDelete?.let { db ->
+        D1DeleteDialog(
+            database = db,
+            isDeleting = opState.isDeleting,
+            onConfirm = { viewModel.delete(db) },
+            onDismiss = { toDelete = null },
+        )
     }
 }
 

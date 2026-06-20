@@ -1,6 +1,7 @@
 package jiamin.chen.orangecloud.data.repository
 
 import jiamin.chen.orangecloud.core.network.CfApiClient
+import jiamin.chen.orangecloud.data.model.D1CreateRequest
 import jiamin.chen.orangecloud.data.model.D1Database
 import jiamin.chen.orangecloud.data.model.D1QueryRequest
 import jiamin.chen.orangecloud.data.model.D1QueryResult
@@ -70,6 +71,14 @@ class StorageRepository @Inject constructor(
      */
     suspend fun getDatabase(accountId: String, databaseId: String): D1Database =
         api.get("accounts/$accountId/d1/database/$databaseId")
+
+    /** 创建数据库。locationHint 为空走自动放置。 */
+    suspend fun createDatabase(accountId: String, name: String, locationHint: String?): D1Database =
+        api.post("accounts/$accountId/d1/database", D1CreateRequest(name, locationHint))
+
+    /** 删除数据库（连同全部表与数据，不可恢复）。 */
+    suspend fun deleteDatabase(accountId: String, databaseId: String) =
+        api.delete("accounts/$accountId/d1/database/$databaseId")
 
     /** 执行 SQL（每条语句一个结果）。 */
     suspend fun query(accountId: String, databaseId: String, sql: String, params: List<String>? = null): List<D1QueryResult> =

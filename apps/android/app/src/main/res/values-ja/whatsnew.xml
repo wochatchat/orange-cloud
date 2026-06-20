@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ⚠️ 自动生成 —— 请勿手改。改 packages/changelog/android.json 后运行 `pnpm changelog:gen`。 -->
+<resources>
+    <string name="whatsnew_1_1_0_title">表示から管理へ</string>
+    <string name="whatsnew_1_1_0_detail">ドメインの追加、D1 データベースとトンネルの作成・削除、Worker の変数/シークレット/トリガー/ドメイン、トンネルの公開ホスト名ルートを管理できるようになりました。</string>
+    <string name="whatsnew_1_0_0_title">OAuth ワンタップログイン</string>
+    <string name="whatsnew_1_0_0_detail">Cloudflare 公式の認証でログイン。API トークンの貼り付けは不要です。</string>
+    <string name="whatsnew_1_0_1_title">ドメイン · Workers · ストレージ</string>
+    <string name="whatsnew_1_0_1_detail">DNS、トラフィック分析、WAF、Snippets、Workers リアルタイムログ、R2/D1/KV ストレージをすべて網羅。</string>
+</resources>

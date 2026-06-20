@@ -19,18 +19,23 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -51,16 +56,20 @@ import jiamin.chen.orangecloud.core.design.theme.OcSuccess
 import jiamin.chen.orangecloud.data.model.Zone
 import java.time.LocalTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ZoneListScreen(
     onZoneClick: (Zone) -> Unit = {},
     viewModel: ZoneListViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val addState by viewModel.addState.collectAsStateWithLifecycle()
     val isDark = jiamin.chen.orangecloud.core.design.theme.LocalIsDark.current
     val phase = remember(isDark) { SkyPhase.current(isDark, LocalTime.now().hour) }
     val onSky = if (phase.isDark) Color(0xFFF3ECE4) else Color(0xFF24190F)
     val activeCount = uiState.zones.count { it.isActive }
+    var showAdd by remember { mutableStateOf(false) }
+    val addSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     SkyBackground(phase = phase) {
         Column(Modifier.fillMaxSize().systemBarsPadding()) {
@@ -83,6 +92,11 @@ fun ZoneListScreen(
                         )
                     }
                 }
+                if (viewModel.canWrite) {
+                    IconButton(onClick = { showAdd = true }) {
+                        Icon(Icons.Outlined.Add, stringResource(R.string.addzone_title), tint = onSky)
+                    }
+                }
                 if (uiState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(22.dp), color = onSky, strokeWidth = 2.dp)
                     Spacer(Modifier.width(12.dp))
@@ -98,7 +112,7 @@ fun ZoneListScreen(
                     Box(Modifier.fillMaxSize(), Alignment.Center) { CircularProgressIndicator(color = onSky) }
 
                 uiState.zones.isEmpty() ->
-                    EmptyZones(onSky) { viewModel.refresh() }
+                    EmptyZones(onSky, viewModel.canWrite, onAdd = { showAdd = true }) { viewModel.refresh() }
 
                 else -> LazyColumn(
                     contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp),
@@ -109,6 +123,19 @@ fun ZoneListScreen(
                     }
                 }
             }
+        }
+
+        if (showAdd) {
+            AddZoneSheet(
+                state = addState,
+                accountName = viewModel.currentAccountName(),
+                sheetState = addSheetState,
+                onCreate = { viewModel.createZone(it) },
+                onDismiss = {
+                    showAdd = false
+                    viewModel.resetAddState()
+                },
+            )
         }
     }
 }
@@ -150,13 +177,16 @@ private fun ZoneRow(zone: Zone, onClick: () -> Unit) {
 }
 
 @Composable
-private fun EmptyZones(onSky: Color, onRetry: () -> Unit) {
+private fun EmptyZones(onSky: Color, canWrite: Boolean, onAdd: () -> Unit, onRetry: () -> Unit) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(Icons.Outlined.Dns, contentDescription = null, tint = onSky.copy(alpha = 0.6f), modifier = Modifier.size(48.dp))
             Spacer(Modifier.height(12.dp))
             Text(stringResource(R.string.zones_empty), color = onSky.copy(alpha = 0.85f), fontSize = 16.sp)
             Spacer(Modifier.height(8.dp))
+            if (canWrite) {
+                TextButton(onClick = onAdd) { Text(stringResource(R.string.addzone_title)) }
+            }
             TextButton(onClick = onRetry) { Text(stringResource(R.string.common_refresh)) }
         }
     }

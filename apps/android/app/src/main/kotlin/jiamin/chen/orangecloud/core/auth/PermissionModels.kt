@@ -26,7 +26,7 @@ object PermissionCatalog {
         PermissionFeature("r2", R.string.perm_r2, R.string.perm_r2_desc, listOf(Scopes.R2_READ), listOf(Scopes.R2_WRITE)),
         PermissionFeature("d1", R.string.perm_d1, R.string.perm_d1_desc, listOf(Scopes.D1_READ), listOf(Scopes.D1_WRITE)),
         PermissionFeature("kv", R.string.perm_kv, R.string.perm_kv_desc, listOf(Scopes.KV_READ), listOf(Scopes.KV_WRITE)),
-        PermissionFeature("tunnels", R.string.perm_tunnels, R.string.perm_tunnels_desc, listOf(Scopes.TUNNEL_READ)),
+        PermissionFeature("tunnels", R.string.perm_tunnels, R.string.perm_tunnels_desc, listOf(Scopes.TUNNEL_READ), listOf(Scopes.TUNNEL_WRITE)),
         PermissionFeature("waf", R.string.perm_waf, R.string.perm_waf_desc, listOf(Scopes.WAF_READ), listOf(Scopes.WAF_WRITE)),
         PermissionFeature("zone_settings", R.string.perm_zone_settings, R.string.perm_zone_settings_desc, listOf(Scopes.ZONE_SETTINGS_READ), listOf(Scopes.ZONE_SETTINGS_WRITE, Scopes.CACHE_PURGE)),
         PermissionFeature("analytics", R.string.perm_analytics, R.string.perm_analytics_desc, listOf(Scopes.ACCOUNT_ANALYTICS_READ, Scopes.ANALYTICS_READ)),

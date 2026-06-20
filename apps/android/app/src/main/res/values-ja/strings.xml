@@ -41,7 +41,7 @@
     <string name="perm_kv">KV ストレージ</string>
     <string name="perm_kv_desc">キー値の読み書き</string>
     <string name="perm_tunnels">トンネル</string>
-    <string name="perm_tunnels_desc">Cloudflare Tunnel を表示</string>
+    <string name="perm_tunnels_desc">トンネルの表示。読み書き権限で作成や公開ホスト名ルートの設定が可能</string>
     <string name="perm_waf">WAF</string>
     <string name="perm_waf_desc">ファイアウォールルールの表示と切替</string>
     <string name="perm_zone_settings">ドメイン設定</string>
@@ -371,10 +371,6 @@
 
     <string name="whatsnew_title">新機能</string>
     <string name="whatsnew_ok">OK</string>
-    <string name="whatsnew_1_0_oauth_title">OAuth ワンタップログイン</string>
-    <string name="whatsnew_1_0_oauth_detail">Cloudflare 公式の認証でログイン。API トークンの貼り付けは不要です。</string>
-    <string name="whatsnew_1_0_modules_title">ドメイン · Workers · ストレージ</string>
-    <string name="whatsnew_1_0_modules_detail">DNS、トラフィック分析、WAF、Snippets、Workers リアルタイムログ、R2/D1/KV ストレージをすべて網羅。</string>
 
     <string name="paywall_title">Orange Cloud Pro</string>
     <string name="paywall_subtitle">すべてのプレミアム機能をアンロック</string>
@@ -388,4 +384,154 @@
     <string name="paywall_monthly">月額</string>
     <string name="paywall_lifetime">買い切り</string>
     <string name="paywall_note">Google Play で課金。いつでもキャンセルできます。</string>
+
+
+    <!-- ドメインを追加 -->
+    <string name="addzone_title">ドメインを追加</string>
+    <string name="addzone_domain_label">ドメイン</string>
+    <string name="addzone_domain_hint">所有しているルートドメイン（例: example.com）を入力します。www や https:// は不要です。</string>
+    <string name="addzone_account">追加先アカウント: %1$s</string>
+    <string name="addzone_ns_note">追加すると Cloudflare が 2 つのネームサーバーを割り当てます。レジストラにログインし、NS をそれらに変更するとドメインが有効になります。</string>
+    <string name="addzone_add">追加</string>
+    <string name="addzone_pending">有効化待ち</string>
+    <string name="addzone_ns_title">ネームサーバー</string>
+    <string name="addzone_copy">ネームサーバーをコピー</string>
+    <string name="addzone_copied">コピーしました</string>
+    <string name="addzone_steps_title">次のステップ</string>
+    <string name="addzone_step1">このドメインを購入したレジストラにログインします。</string>
+    <string name="addzone_step2">「ネームサーバー」設定を見つけます。</string>
+    <string name="addzone_step3">既存のネームサーバーを削除し、上記 2 つの Cloudflare アドレスに置き換えます。</string>
+    <string name="addzone_step4">変更を保存します。有効化には通常数分〜数時間、最大 24 時間かかります。</string>
+    <string name="addzone_done">完了</string>
+    <string name="addzone_ns_missing">Cloudflare がまだネームサーバーを返していません。後でドメイン詳細または Cloudflare ダッシュボードでご確認ください。</string>
+
+    <!-- D1 作成 / 削除 -->
+    <string name="d1_create_title">データベースを作成</string>
+    <string name="d1_create">作成</string>
+    <string name="d1_created">作成しました</string>
+    <string name="d1_name">データベース名</string>
+    <string name="d1_location">プライマリの場所</string>
+    <string name="d1_location_hint">プライマリの場所は主レプリカが置かれるリージョンを決めます。「自動」を選ぶと Cloudflare が近くに配置します。</string>
+    <string name="d1_loc_auto">自動</string>
+    <string name="d1_loc_wnam">北米西部</string>
+    <string name="d1_loc_enam">北米東部</string>
+    <string name="d1_loc_weur">ヨーロッパ西部</string>
+    <string name="d1_loc_eeur">ヨーロッパ東部</string>
+    <string name="d1_loc_apac">アジア太平洋</string>
+    <string name="d1_loc_oc">オセアニア</string>
+    <string name="d1_delete_title">データベースを削除</string>
+    <string name="d1_delete_warn">データベース %1$s とそのすべてのテーブル・データを完全に削除します。取り消しや復元はできません。</string>
+    <string name="d1_delete_confirm_label">確認のためデータベース名を入力</string>
+    <string name="d1_delete_button">完全に削除</string>
+
+    <!-- Worker 管理 -->
+    <string name="worker_manage_secrets">変数とシークレット</string>
+    <string name="worker_manage_triggers">トリガー</string>
+    <string name="worker_manage_domains">ドメイン</string>
+    <string name="worker_secrets_title">変数とシークレット</string>
+    <string name="worker_secrets_section">シークレット</string>
+    <string name="worker_secrets_empty">シークレットはありません</string>
+    <string name="worker_secrets_add">シークレットを追加</string>
+    <string name="worker_secrets_footer">シークレットの値はセキュリティのため読み取れません。一覧は名前のみ表示します。同名で追加すると上書きされます。</string>
+    <string name="worker_secrets_readonly">現在の認可では表示のみ可能です（workers-scripts.write がありません）。</string>
+    <string name="worker_vars_section">環境変数</string>
+    <string name="worker_vars_empty">変数はありません</string>
+    <string name="worker_vars_add">変数を追加</string>
+    <string name="worker_vars_footer">プレーンテキスト変数で、閲覧・編集できます。1 つを変更しても他のバインディングには影響しません。</string>
+    <string name="worker_var_add_title">変数を追加</string>
+    <string name="worker_var_edit_title">変数を編集</string>
+    <string name="worker_secret_add_title">シークレットを追加</string>
+    <string name="worker_binding_name">名前</string>
+    <string name="worker_binding_name_hint">英字・数字・アンダースコア。数字で始められません。</string>
+    <string name="worker_binding_value">値</string>
+    <string name="worker_secret_value">値（保存後は読み取り不可）</string>
+    <string name="worker_other_section">その他のバインディング（読み取り専用）</string>
+    <string name="worker_other_footer">KV / D1 / R2 などのリソースバインディングはここで確認できます。編集は Wrangler またはダッシュボードで行ってください。</string>
+    <string name="worker_bind_var">変数</string>
+    <string name="worker_bind_secret">シークレット</string>
+    <string name="worker_bind_queue">キュー</string>
+    <string name="worker_bind_service">Service バインディング</string>
+    <string name="worker_bind_browser">ブラウザレンダリング</string>
+    <string name="worker_triggers_title">トリガー</string>
+    <string name="worker_triggers_empty_desc">cron 式を追加して、この Worker をスケジュール実行します。</string>
+    <string name="worker_triggers_add">トリガーを追加</string>
+    <string name="worker_triggers_footer">cron は UTC で実行されます。</string>
+    <string name="worker_cron_expr">cron 式</string>
+    <string name="worker_cron_hint">標準 5 フィールド: 分 時 日 月 曜日（UTC）。</string>
+    <string name="worker_cron_presets">よく使う設定</string>
+    <string name="worker_cron_5m">5 分ごと</string>
+    <string name="worker_cron_hourly">毎時</string>
+    <string name="worker_cron_daily">毎日 0:00（UTC）</string>
+    <string name="worker_cron_weekly">毎週月曜 0:00（UTC）</string>
+    <string name="worker_cron_every_n">%1$d 分ごと</string>
+    <string name="worker_cron_desc_hourly">毎時</string>
+    <string name="worker_cron_desc_daily">毎日 %1$s（UTC）</string>
+    <string name="worker_cron_custom">カスタム cron（UTC）</string>
+    <string name="worker_domains_title">ドメイン</string>
+    <string name="worker_subdomain_section">workers.dev</string>
+    <string name="worker_subdomain_label">workers.dev サブドメイン</string>
+    <string name="worker_subdomain_footer">有効にすると、この Worker は スクリプト名.サブドメイン.workers.dev でアクセスできます。</string>
+    <string name="worker_subdomain_none">このアカウントでは workers.dev サブドメインが有効になっていません</string>
+    <string name="worker_customdomains_section">カスタムドメイン</string>
+    <string name="worker_customdomains_empty">カスタムドメインはありません</string>
+    <string name="worker_customdomains_add">カスタムドメインを接続</string>
+    <string name="worker_customdomains_footer">ドメイン/サブドメインを直接この Worker に向けます。DNS や証明書の設定は不要です。</string>
+    <string name="worker_routes_section">ルート</string>
+    <string name="worker_routes_empty">ルートはありません</string>
+    <string name="worker_routes_add">ルートを追加</string>
+    <string name="worker_routes_footer">URL パターン（例: example.com/api/*）で一致するリクエストをこの Worker に渡します。</string>
+    <string name="worker_route_zone">ドメイン</string>
+    <string name="worker_route_zone_pick">選択してください</string>
+    <string name="worker_domain_hostname">ホスト名</string>
+    <string name="worker_domain_hostname_hint">完全なホスト名。選択したドメインに属している必要があります。</string>
+    <string name="worker_route_pattern">ルートパターン</string>
+    <string name="worker_route_pattern_hint">URL パターン。ワイルドカード可（例: example.com/*）。</string>
+    <string name="worker_attach_domain_title">カスタムドメインを接続</string>
+    <string name="worker_add_route_title">ルートを追加</string>
+
+    <!-- トンネル管理 -->
+    <string name="tunnel_new">新しいトンネル</string>
+    <string name="tunnel_new_name">トンネル名</string>
+    <string name="tunnel_new_footer">リモート管理トンネルを作成します（ダッシュボード／本アプリで構成）。</string>
+    <string name="tunnel_create">作成</string>
+    <string name="tunnel_connect_section">実行コマンド</string>
+    <string name="tunnel_connect_intro">対象マシンに cloudflared をインストールし、以下のコマンドを管理者として実行するとトンネルが接続されます。</string>
+    <string name="tunnel_connect_reveal">トークンを表示</string>
+    <string name="tunnel_connect_hide">トークンを隠す</string>
+    <string name="tunnel_connect_copy">コマンドをコピー</string>
+    <string name="tunnel_connect_copied">コマンドをコピーしました</string>
+    <string name="tunnel_connect_token_warn">トークンはトンネルの認証情報に相当します。大切に保管し、公開しないでください。</string>
+    <string name="tunnel_connect_loading">トークンを取得中…</string>
+    <string name="tunnel_connect_failed">トークンを取得できませんでした</string>
+    <string name="tunnel_hostnames_section">公開ホスト名</string>
+    <string name="tunnel_hostnames_empty">公開ホスト名はまだありません。下から追加してください。</string>
+    <string name="tunnel_hostnames_empty_ro">公開ホスト名はまだありません。</string>
+    <string name="tunnel_hostnames_add">公開ホスト名を追加</string>
+    <string name="tunnel_hostnames_footer">外部ドメインをローカルサービスにマッピングします。追加時にプロキシ済み CNAME が自動作成されます。</string>
+    <string name="tunnel_hostnames_loading">構成を読み込み中…</string>
+    <string name="tunnel_local_note">このトンネルはローカル管理（config.yml）です。公開ホスト名は cloudflared 設定ファイルで管理してください。</string>
+    <string name="tunnel_danger_section">危険な操作</string>
+    <string name="tunnel_cleanup">停止した接続を整理</string>
+    <string name="tunnel_cleanup_confirm_title">接続を整理</string>
+    <string name="tunnel_cleanup_confirm_msg">切断された接続記録を削除します。稼働中の cloudflared は自動的に再接続します。</string>
+    <string name="tunnel_delete">トンネルを削除</string>
+    <string name="tunnel_delete_confirm_title">トンネルを削除</string>
+    <string name="tunnel_delete_confirm_msg">このトンネルを削除し、接続を切断します。取り消せません。</string>
+    <string name="tunnel_host_form_add">公開ホスト名を追加</string>
+    <string name="tunnel_host_form_edit">公開ホスト名を編集</string>
+    <string name="tunnel_host_hostname">公開ホスト名</string>
+    <string name="tunnel_host_protocol">プロトコル</string>
+    <string name="tunnel_host_service">ローカルサービス</string>
+    <string name="tunnel_host_service_footer">cloudflared はこのホスト名宛てのリクエストをこのローカルアドレスへ転送します。</string>
+    <string name="tunnel_host_service_other">完全なサービスアドレス（例: unix:/path.sock）</string>
+    <string name="tunnel_host_path">パス</string>
+    <string name="tunnel_host_path_hint">パスの正規表現（任意）。例: /api/.*</string>
+    <string name="tunnel_proto_other">その他</string>
+
+    <!-- ヘルプとフィードバック -->
+    <string name="settings_help">ヘルプとフィードバック</string>
+    <string name="settings_help_footer">フィードバックや提案はバージョン・端末情報（トークンやシークレットは含みません）とともにメールで送信されます。</string>
+    <string name="settings_feedback">フィードバックを送信</string>
+    <string name="feedback_subject">Orange Cloud フィードバック</string>
+    <string name="feedback_no_mail">メールアプリが見つかりません</string>
 </resources>

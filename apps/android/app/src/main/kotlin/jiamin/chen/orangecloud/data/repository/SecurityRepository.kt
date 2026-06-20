@@ -2,7 +2,11 @@ package jiamin.chen.orangecloud.data.repository
 
 import jiamin.chen.orangecloud.core.network.ApiError
 import jiamin.chen.orangecloud.core.network.CfApiClient
+import jiamin.chen.orangecloud.data.model.CreateTunnelRequest
 import jiamin.chen.orangecloud.data.model.Tunnel
+import jiamin.chen.orangecloud.data.model.TunnelConfig
+import jiamin.chen.orangecloud.data.model.TunnelConfigResult
+import jiamin.chen.orangecloud.data.model.TunnelConfigUpdate
 import jiamin.chen.orangecloud.data.model.WafEntrypointUpdate
 import jiamin.chen.orangecloud.data.model.WafRule
 import jiamin.chen.orangecloud.data.model.WafRuleCreate
@@ -65,4 +69,42 @@ class SecurityRepository @Inject constructor(
      */
     suspend fun getTunnel(accountId: String, tunnelId: String): Tunnel =
         api.get("accounts/$accountId/cfd_tunnel/$tunnelId")
+
+    // MARK: - 隧道生命周期（argotunnel.write）
+
+    /** 新建远程托管隧道（config_src=cloudflare）。 */
+    suspend fun createTunnel(accountId: String, name: String): Tunnel =
+        api.post("accounts/$accountId/cfd_tunnel", CreateTunnelRequest(name))
+
+    /** 隧道连接令牌（result 是裸 base64 字符串），用于 `cloudflared tunnel run --token`。 */
+    suspend fun tunnelToken(accountId: String, tunnelId: String): String =
+        api.get("accounts/$accountId/cfd_tunnel/$tunnelId/token")
+
+    /** 清理失活连接（删除隧道前先调用；活跃的 cloudflared 仍会重连）。 */
+    suspend fun deleteConnections(accountId: String, tunnelId: String) =
+        api.delete("accounts/$accountId/cfd_tunnel/$tunnelId/connections")
+
+    /** 删除隧道：先清理连接再删；若仍有活跃连接，CF 业务错误原样透出。 */
+    suspend fun deleteTunnel(accountId: String, tunnelId: String) {
+        runCatching { deleteConnections(accountId, tunnelId) }
+        api.delete("accounts/$accountId/cfd_tunnel/$tunnelId")
+    }
+
+    // MARK: - 配置（公共主机名 / ingress，仅远程托管）
+
+    /** 读隧道配置。新建后尚无配置时返回 null（404 或 config 为空均按「无配置」处理）。 */
+    suspend fun configuration(accountId: String, tunnelId: String): TunnelConfig? = try {
+        api.get<TunnelConfigResult>("accounts/$accountId/cfd_tunnel/$tunnelId/configurations").config
+    } catch (e: ApiError.Http) {
+        if (e.status == 404) null else throw e
+    }
+
+    /** 整组回写配置（catch-all 守在末尾由调用方保证），返回更新后的配置。 */
+    suspend fun updateConfiguration(accountId: String, tunnelId: String, config: TunnelConfig): TunnelConfig {
+        val result = api.put<TunnelConfigResult, TunnelConfigUpdate>(
+            "accounts/$accountId/cfd_tunnel/$tunnelId/configurations",
+            TunnelConfigUpdate(config),
+        )
+        return result.config ?: config
+    }
 }

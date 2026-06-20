@@ -22,6 +22,7 @@ object Scopes {
     const val KV_READ = "workers-kv-storage.read"
     const val KV_WRITE = "workers-kv-storage.write"
     const val TUNNEL_READ = "argotunnel.read"
+    const val TUNNEL_WRITE = "argotunnel.write"
     const val WAF_READ = "zone-waf.read"
     const val WAF_WRITE = "zone-waf.write"
     const val ZONE_SETTINGS_READ = "zone-settings.read"
@@ -45,7 +46,7 @@ object Scopes {
         R2_READ, R2_WRITE,
         D1_READ, D1_WRITE,
         KV_READ, KV_WRITE,
-        TUNNEL_READ,
+        TUNNEL_READ, TUNNEL_WRITE,
         WAF_READ, WAF_WRITE,
         ZONE_SETTINGS_READ, ZONE_SETTINGS_WRITE, CACHE_PURGE,
         ACCOUNT_ANALYTICS_READ, ANALYTICS_READ,

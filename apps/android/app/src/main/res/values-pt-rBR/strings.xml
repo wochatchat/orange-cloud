@@ -41,7 +41,7 @@
     <string name="perm_kv">Armazenamento KV</string>
     <string name="perm_kv_desc">Ler e gravar chave-valor</string>
     <string name="perm_tunnels">Túneis</string>
-    <string name="perm_tunnels_desc">Ver Cloudflare Tunnel</string>
+    <string name="perm_tunnels_desc">Ver túneis; com acesso de escrita, criar túneis e configurar rotas de nome de host público</string>
     <string name="perm_waf">WAF</string>
     <string name="perm_waf_desc">Ver e alternar regras de firewall</string>
     <string name="perm_zone_settings">Configurações do domínio</string>
@@ -371,10 +371,6 @@
 
     <string name="whatsnew_title">Novidades</string>
     <string name="whatsnew_ok">Entendi</string>
-    <string name="whatsnew_1_0_oauth_title">Login OAuth com um toque</string>
-    <string name="whatsnew_1_0_oauth_detail">Entre com a autorização oficial da Cloudflare, sem colar tokens de API.</string>
-    <string name="whatsnew_1_0_modules_title">Domínios · Workers · Armazenamento</string>
-    <string name="whatsnew_1_0_modules_detail">DNS, análises, WAF, Snippets, logs ao vivo de Workers e armazenamento R2/D1/KV, tudo em um só lugar.</string>
 
     <string name="paywall_title">Orange Cloud Pro</string>
     <string name="paywall_subtitle">Desbloqueie todos os recursos premium</string>
@@ -388,4 +384,154 @@
     <string name="paywall_monthly">Mensal</string>
     <string name="paywall_lifetime">Pagamento único</string>
     <string name="paywall_note">Cobrado pelo Google Play; cancele quando quiser.</string>
+
+
+    <!-- Adicionar domínio -->
+    <string name="addzone_title">Adicionar domínio</string>
+    <string name="addzone_domain_label">Domínio</string>
+    <string name="addzone_domain_hint">Digite um domínio raiz que você já possui (ex.: example.com), sem www nem https://.</string>
+    <string name="addzone_account">Adicionar à conta: %1$s</string>
+    <string name="addzone_ns_note">Após adicionar, a Cloudflare atribui dois servidores de nomes. Entre no seu registrador e troque os NS por eles para ativar o domínio.</string>
+    <string name="addzone_add">Adicionar</string>
+    <string name="addzone_pending">Aguardando ativação</string>
+    <string name="addzone_ns_title">Servidores de nomes</string>
+    <string name="addzone_copy">Copiar servidores de nomes</string>
+    <string name="addzone_copied">Copiado</string>
+    <string name="addzone_steps_title">Próximos passos</string>
+    <string name="addzone_step1">Entre no registrador onde você comprou este domínio.</string>
+    <string name="addzone_step2">Encontre a configuração “Servidores de nomes”.</string>
+    <string name="addzone_step3">Remova os servidores de nomes atuais e substitua pelos dois endereços da Cloudflare acima.</string>
+    <string name="addzone_step4">Salve as alterações. A ativação costuma levar de minutos a horas, até 24 horas.</string>
+    <string name="addzone_done">Concluído</string>
+    <string name="addzone_ns_missing">A Cloudflare ainda não retornou os servidores de nomes. Verifique os detalhes do domínio ou o painel da Cloudflare mais tarde.</string>
+
+    <!-- D1 criar / excluir -->
+    <string name="d1_create_title">Criar banco de dados</string>
+    <string name="d1_create">Criar</string>
+    <string name="d1_created">Criado</string>
+    <string name="d1_name">Nome do banco de dados</string>
+    <string name="d1_location">Local principal</string>
+    <string name="d1_location_hint">O local principal define onde fica a réplica principal. Escolha “Automático” para a Cloudflare colocá-la por perto.</string>
+    <string name="d1_loc_auto">Automático</string>
+    <string name="d1_loc_wnam">Oeste da América do Norte</string>
+    <string name="d1_loc_enam">Leste da América do Norte</string>
+    <string name="d1_loc_weur">Europa Ocidental</string>
+    <string name="d1_loc_eeur">Europa Oriental</string>
+    <string name="d1_loc_apac">Ásia-Pacífico</string>
+    <string name="d1_loc_oc">Oceania</string>
+    <string name="d1_delete_title">Excluir banco de dados</string>
+    <string name="d1_delete_warn">Isso exclui permanentemente o banco de dados %1$s e todas as suas tabelas e dados. Não é possível desfazer nem recuperar.</string>
+    <string name="d1_delete_confirm_label">Digite o nome do banco de dados para confirmar</string>
+    <string name="d1_delete_button">Excluir permanentemente</string>
+
+    <!-- Gerenciamento de Workers -->
+    <string name="worker_manage_secrets">Variáveis e segredos</string>
+    <string name="worker_manage_triggers">Gatilhos</string>
+    <string name="worker_manage_domains">Domínios</string>
+    <string name="worker_secrets_title">Variáveis e segredos</string>
+    <string name="worker_secrets_section">Segredos</string>
+    <string name="worker_secrets_empty">Nenhum segredo</string>
+    <string name="worker_secrets_add">Adicionar segredo</string>
+    <string name="worker_secrets_footer">Os valores dos segredos não podem ser lidos por segurança; a lista mostra apenas nomes. Adicionar o mesmo nome sobrescreve.</string>
+    <string name="worker_secrets_readonly">Somente leitura com a autorização atual (falta workers-scripts.write).</string>
+    <string name="worker_vars_section">Variáveis de ambiente</string>
+    <string name="worker_vars_empty">Nenhuma variável</string>
+    <string name="worker_vars_add">Adicionar variável</string>
+    <string name="worker_vars_footer">Variáveis de texto simples, legíveis e editáveis. Editar uma não afeta outras associações.</string>
+    <string name="worker_var_add_title">Adicionar variável</string>
+    <string name="worker_var_edit_title">Editar variável</string>
+    <string name="worker_secret_add_title">Adicionar segredo</string>
+    <string name="worker_binding_name">Nome</string>
+    <string name="worker_binding_name_hint">Letras, dígitos e sublinhado; não pode começar com dígito.</string>
+    <string name="worker_binding_value">Valor</string>
+    <string name="worker_secret_value">Valor (não pode ser lido após salvar)</string>
+    <string name="worker_other_section">Outras associações (somente leitura)</string>
+    <string name="worker_other_footer">Associações de recursos KV / D1 / R2 e outras aparecem aqui; edite-as com o Wrangler ou o painel.</string>
+    <string name="worker_bind_var">Variável</string>
+    <string name="worker_bind_secret">Segredo</string>
+    <string name="worker_bind_queue">Fila</string>
+    <string name="worker_bind_service">Associação de serviço</string>
+    <string name="worker_bind_browser">Renderização do navegador</string>
+    <string name="worker_triggers_title">Gatilhos</string>
+    <string name="worker_triggers_empty_desc">Adicione uma expressão cron para executar este Worker de forma agendada.</string>
+    <string name="worker_triggers_add">Adicionar gatilho</string>
+    <string name="worker_triggers_footer">O cron é executado em UTC.</string>
+    <string name="worker_cron_expr">Expressão cron</string>
+    <string name="worker_cron_hint">5 campos padrão: minuto hora dia mês dia da semana (UTC).</string>
+    <string name="worker_cron_presets">Comuns</string>
+    <string name="worker_cron_5m">A cada 5 minutos</string>
+    <string name="worker_cron_hourly">A cada hora</string>
+    <string name="worker_cron_daily">Diariamente às 00:00 (UTC)</string>
+    <string name="worker_cron_weekly">Às segundas, 00:00 (UTC)</string>
+    <string name="worker_cron_every_n">A cada %1$d minutos</string>
+    <string name="worker_cron_desc_hourly">A cada hora</string>
+    <string name="worker_cron_desc_daily">Diariamente às %1$s (UTC)</string>
+    <string name="worker_cron_custom">Cron personalizado (UTC)</string>
+    <string name="worker_domains_title">Domínios</string>
+    <string name="worker_subdomain_section">workers.dev</string>
+    <string name="worker_subdomain_label">Subdomínio workers.dev</string>
+    <string name="worker_subdomain_footer">Quando ativado, o Worker fica acessível em script.subdominio.workers.dev.</string>
+    <string name="worker_subdomain_none">O subdomínio workers.dev não está ativado para esta conta</string>
+    <string name="worker_customdomains_section">Domínios personalizados</string>
+    <string name="worker_customdomains_empty">Nenhum domínio personalizado</string>
+    <string name="worker_customdomains_add">Vincular domínio personalizado</string>
+    <string name="worker_customdomains_footer">Aponte um domínio/subdomínio diretamente para este Worker, sem configurar DNS nem certificados.</string>
+    <string name="worker_routes_section">Rotas</string>
+    <string name="worker_routes_empty">Nenhuma rota</string>
+    <string name="worker_routes_add">Adicionar rota</string>
+    <string name="worker_routes_footer">Use um padrão de URL (ex.: example.com/api/*) para enviar as solicitações correspondentes a este Worker.</string>
+    <string name="worker_route_zone">Domínio</string>
+    <string name="worker_route_zone_pick">Selecione</string>
+    <string name="worker_domain_hostname">Nome de host</string>
+    <string name="worker_domain_hostname_hint">Nome de host completo; deve pertencer ao domínio selecionado.</string>
+    <string name="worker_route_pattern">Padrão de rota</string>
+    <string name="worker_route_pattern_hint">Padrão de URL, curingas permitidos, ex.: example.com/*.</string>
+    <string name="worker_attach_domain_title">Vincular domínio personalizado</string>
+    <string name="worker_add_route_title">Adicionar rota</string>
+
+    <!-- Gerenciamento de túneis -->
+    <string name="tunnel_new">Novo túnel</string>
+    <string name="tunnel_new_name">Nome do túnel</string>
+    <string name="tunnel_new_footer">Cria um túnel gerenciado remotamente (configurado pelo painel / por este app).</string>
+    <string name="tunnel_create">Criar</string>
+    <string name="tunnel_connect_section">Executar comando</string>
+    <string name="tunnel_connect_intro">Instale o cloudflared na máquina de destino e execute o comando abaixo como administrador para conectar o túnel.</string>
+    <string name="tunnel_connect_reveal">Mostrar token</string>
+    <string name="tunnel_connect_hide">Ocultar token</string>
+    <string name="tunnel_connect_copy">Copiar comando</string>
+    <string name="tunnel_connect_copied">Comando copiado</string>
+    <string name="tunnel_connect_token_warn">O token equivale às credenciais do túnel. Guarde-o bem e não o compartilhe publicamente.</string>
+    <string name="tunnel_connect_loading">Obtendo token…</string>
+    <string name="tunnel_connect_failed">Não foi possível obter o token</string>
+    <string name="tunnel_hostnames_section">Nomes de host públicos</string>
+    <string name="tunnel_hostnames_empty">Ainda não há nomes de host públicos. Adicione um abaixo.</string>
+    <string name="tunnel_hostnames_empty_ro">Ainda não há nomes de host públicos.</string>
+    <string name="tunnel_hostnames_add">Adicionar nome de host público</string>
+    <string name="tunnel_hostnames_footer">Mapeie um domínio público para um serviço local. Um CNAME com proxy é criado automaticamente ao adicionar um.</string>
+    <string name="tunnel_hostnames_loading">Carregando configuração…</string>
+    <string name="tunnel_local_note">Este túnel é gerenciado localmente (config.yml); gerencie os nomes de host públicos no arquivo de configuração do cloudflared.</string>
+    <string name="tunnel_danger_section">Zona de perigo</string>
+    <string name="tunnel_cleanup">Limpar conexões inativas</string>
+    <string name="tunnel_cleanup_confirm_title">Limpar conexões</string>
+    <string name="tunnel_cleanup_confirm_msg">Remove os registros de conexões desconectadas; instâncias ativas do cloudflared se reconectam automaticamente.</string>
+    <string name="tunnel_delete">Excluir túnel</string>
+    <string name="tunnel_delete_confirm_title">Excluir túnel</string>
+    <string name="tunnel_delete_confirm_msg">Isso exclui o túnel e encerra suas conexões. Não é possível desfazer.</string>
+    <string name="tunnel_host_form_add">Adicionar nome de host público</string>
+    <string name="tunnel_host_form_edit">Editar nome de host público</string>
+    <string name="tunnel_host_hostname">Nome de host público</string>
+    <string name="tunnel_host_protocol">Protocolo</string>
+    <string name="tunnel_host_service">Serviço local</string>
+    <string name="tunnel_host_service_footer">O cloudflared encaminha as solicitações deste nome de host para este endereço local.</string>
+    <string name="tunnel_host_service_other">Endereço de serviço completo, ex.: unix:/path.sock</string>
+    <string name="tunnel_host_path">Caminho</string>
+    <string name="tunnel_host_path_hint">Regex de caminho (opcional), ex.: /api/.*</string>
+    <string name="tunnel_proto_other">Outro</string>
+
+    <!-- Ajuda e feedback -->
+    <string name="settings_help">Ajuda e feedback</string>
+    <string name="settings_help_footer">Feedback e sugestões são enviados ao nosso e-mail com a versão e informações do dispositivo (sem tokens nem segredos).</string>
+    <string name="settings_feedback">Enviar feedback</string>
+    <string name="feedback_subject">Feedback do Orange Cloud</string>
+    <string name="feedback_no_mail">Nenhum app de e-mail encontrado</string>
 </resources>

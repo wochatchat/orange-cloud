@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.automirrored.outlined.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.MonitorHeart
 import androidx.compose.material.icons.outlined.Notifications
@@ -96,6 +98,27 @@ fun SettingsScreen(
         }
     }
     fun openUrl(url: String) = context.launchCustomTab(Uri.parse(url))
+
+    // 帮助与反馈：邮件 intent，正文预填诊断头（版本/系统/设备/账号数），不含任何令牌或密钥。
+    val feedbackSubject = stringResource(R.string.feedback_subject)
+    val noMailMsg = stringResource(R.string.feedback_no_mail)
+    fun sendFeedback() {
+        val diag = buildString {
+            append("\n\n---\n")
+            append("App ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})\n")
+            append("Android ${Build.VERSION.RELEASE} (SDK ${Build.VERSION.SDK_INT})\n")
+            append("${Build.MANUFACTURER} ${Build.MODEL}\n")
+            append("Accounts: ${state.sessions.size}")
+        }
+        val intent = Intent(Intent.ACTION_SENDTO).apply {
+            data = Uri.parse("mailto:")
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("orange-cloud@hz.do"))
+            putExtra(Intent.EXTRA_SUBJECT, feedbackSubject)
+            putExtra(Intent.EXTRA_TEXT, diag)
+        }
+        runCatching { context.startActivity(intent) }
+            .onFailure { Toast.makeText(context, noMailMsg, Toast.LENGTH_SHORT).show() }
+    }
 
     SkyBackground(phase = phase) {
         Column(
@@ -196,6 +219,11 @@ fun SettingsScreen(
             // ── 服务状态 ──
             SettingsSection(stringResource(R.string.settings_service), stringResource(R.string.settings_service_footer)) {
                 NavRow(Icons.Outlined.MonitorHeart, OcSuccess, stringResource(R.string.status_title), onOpenStatus)
+            }
+
+            // ── 帮助与反馈 ──
+            SettingsSection(stringResource(R.string.settings_help), stringResource(R.string.settings_help_footer)) {
+                NavRow(Icons.Outlined.Email, Color(0xFF3D86E0), stringResource(R.string.settings_feedback)) { sendFeedback() }
             }
 
             // ── 关于 ──

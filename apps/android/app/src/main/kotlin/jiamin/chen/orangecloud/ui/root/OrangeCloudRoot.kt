@@ -68,7 +68,10 @@ import jiamin.chen.orangecloud.ui.storage.R2ObjectListScreen
 import jiamin.chen.orangecloud.ui.storage.StorageHubScreen
 import jiamin.chen.orangecloud.ui.workers.WorkerDetailScreen
 import jiamin.chen.orangecloud.ui.workers.WorkerListScreen
+import jiamin.chen.orangecloud.ui.workers.WorkerRoutesScreen
+import jiamin.chen.orangecloud.ui.workers.WorkerSecretsScreen
 import jiamin.chen.orangecloud.ui.workers.WorkerTailScreen
+import jiamin.chen.orangecloud.ui.workers.WorkerTriggersScreen
 import jiamin.chen.orangecloud.ui.zones.ZoneDetailScreen
 import jiamin.chen.orangecloud.ui.zones.ZonesPaneScreen
 import java.time.LocalTime
@@ -119,6 +122,9 @@ private object Dest {
     const val SNIPPET_EDIT_ROUTE = "snippetEdit/{zoneId}?zoneName={zoneName}&name={name}"
     const val ZONE_SETTINGS_ROUTE = "zonesettings/{zoneId}?zoneName={zoneName}"
     const val WORKER_ROUTE = "worker/{scriptName}"
+    const val WORKER_SECRETS_ROUTE = "worker/{scriptName}/secrets"
+    const val WORKER_TRIGGERS_ROUTE = "worker/{scriptName}/triggers"
+    const val WORKER_DOMAINS_ROUTE = "worker/{scriptName}/domains"
     const val TAIL_ROUTE = "tail/{scriptName}"
     private fun zoneScoped(prefix: String, zoneId: String, zoneName: String) =
         "$prefix/$zoneId?zoneName=${Uri.encode(zoneName)}"
@@ -133,6 +139,9 @@ private object Dest {
     fun identity(sessionId: String): String = "identity/${Uri.encode(sessionId)}"
     fun tunnelDetail(id: String, name: String): String = "tunnel/$id?tunnelName=${Uri.encode(name)}"
     fun worker(scriptName: String): String = "worker/${Uri.encode(scriptName)}"
+    fun workerSecrets(scriptName: String): String = "worker/${Uri.encode(scriptName)}/secrets"
+    fun workerTriggers(scriptName: String): String = "worker/${Uri.encode(scriptName)}/triggers"
+    fun workerDomains(scriptName: String): String = "worker/${Uri.encode(scriptName)}/domains"
     fun tail(scriptName: String): String = "tail/${Uri.encode(scriptName)}"
     fun r2Objects(bucket: String): String = "r2/objects/${Uri.encode(bucket)}"
     fun d1Query(dbId: String, dbName: String): String = "d1/query/$dbId?dbName=${Uri.encode(dbName)}"
@@ -284,11 +293,13 @@ private fun MainScaffold() {
             ) { entry ->
                 val zoneId = entry.arguments?.getString("zoneId").orEmpty()
                 val zoneName = entry.arguments?.getString("zoneName").orEmpty()
-                SnippetsListScreen(
-                    onBack = { navController.popBackStack() },
-                    onOpenSnippet = { name -> navController.navigate(Dest.snippetEdit(zoneId, zoneName, name)) },
-                    onCreate = { navController.navigate(Dest.snippetEdit(zoneId, zoneName, "")) },
-                )
+                ProGate {
+                    SnippetsListScreen(
+                        onBack = { navController.popBackStack() },
+                        onOpenSnippet = { name -> navController.navigate(Dest.snippetEdit(zoneId, zoneName, name)) },
+                        onCreate = { navController.navigate(Dest.snippetEdit(zoneId, zoneName, "")) },
+                    )
+                }
             }
             composable(
                 route = Dest.SNIPPET_EDIT_ROUTE,
@@ -298,10 +309,12 @@ private fun MainScaffold() {
                     navArgument("name") { type = NavType.StringType; defaultValue = "" },
                 ),
             ) {
-                SnippetEditorScreen(
-                    onBack = { navController.popBackStack() },
-                    onClosed = { navController.popBackStack() },
-                )
+                ProGate {
+                    SnippetEditorScreen(
+                        onBack = { navController.popBackStack() },
+                        onClosed = { navController.popBackStack() },
+                    )
+                }
             }
             composable(
                 route = Dest.ZONE_SETTINGS_ROUTE,
@@ -346,7 +359,28 @@ private fun MainScaffold() {
                 WorkerDetailScreen(
                     onBack = { navController.popBackStack() },
                     onOpenTail = { navController.navigate(Dest.tail(scriptName)) },
+                    onOpenSecrets = { navController.navigate(Dest.workerSecrets(scriptName)) },
+                    onOpenTriggers = { navController.navigate(Dest.workerTriggers(scriptName)) },
+                    onOpenDomains = { navController.navigate(Dest.workerDomains(scriptName)) },
                 )
+            }
+            composable(
+                route = Dest.WORKER_SECRETS_ROUTE,
+                arguments = listOf(navArgument("scriptName") { type = NavType.StringType }),
+            ) {
+                ProGate { WorkerSecretsScreen(onBack = { navController.popBackStack() }) }
+            }
+            composable(
+                route = Dest.WORKER_TRIGGERS_ROUTE,
+                arguments = listOf(navArgument("scriptName") { type = NavType.StringType }),
+            ) {
+                ProGate { WorkerTriggersScreen(onBack = { navController.popBackStack() }) }
+            }
+            composable(
+                route = Dest.WORKER_DOMAINS_ROUTE,
+                arguments = listOf(navArgument("scriptName") { type = NavType.StringType }),
+            ) {
+                ProGate { WorkerRoutesScreen(onBack = { navController.popBackStack() }) }
             }
             composable(
                 route = Dest.TAIL_ROUTE,

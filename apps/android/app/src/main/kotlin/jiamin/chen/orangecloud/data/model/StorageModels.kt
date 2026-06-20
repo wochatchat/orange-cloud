@@ -49,6 +49,16 @@ data class D1QueryRequest(
     val params: List<String>? = null,
 )
 
+/**
+ * 新建数据库（POST /accounts/{id}/d1/database）请求体。primaryLocationHint 为空时
+ * 不编码进 JSON（explicitNulls=false），由 Cloudflare 就近放置。
+ */
+@Serializable
+data class D1CreateRequest(
+    val name: String,
+    @SerialName("primary_location_hint") val primaryLocationHint: String? = null,
+)
+
 /** PRAGMA table_info 解析后的列结构（运行期结构，非 API 模型）。 */
 data class D1Column(
     val name: String,

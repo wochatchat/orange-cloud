@@ -5,7 +5,6 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import jiamin.chen.orangecloud.BuildConfig
-import jiamin.chen.orangecloud.R
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -16,17 +15,13 @@ data class WhatsNewItem(val titleRes: Int, val detailRes: Int)
 /** 一个版本的「新功能」集合。version 须 == MARKETING_VERSION 基号。 */
 data class WhatsNewRelease(val version: String, val items: List<WhatsNewItem>)
 
-/** 按版本 curated 的「新功能」内容（对应 iOS WhatsNewContent.releases）。 */
+/**
+ * 按版本 curated 的「新功能」内容（对应 iOS WhatsNewContent.releases）。
+ * ⚠️ 内容是单一数据源：改 packages/changelog/android.json 后运行 `pnpm changelog:gen`，
+ *    会重新生成 WhatsNewReleases.generated.kt 与各 locale 的 whatsnew.xml 资源（勿手改）。
+ */
 object WhatsNewContent {
-    val releases: List<WhatsNewRelease> = listOf(
-        WhatsNewRelease(
-            version = "1.0",
-            items = listOf(
-                WhatsNewItem(R.string.whatsnew_1_0_oauth_title, R.string.whatsnew_1_0_oauth_detail),
-                WhatsNewItem(R.string.whatsnew_1_0_modules_title, R.string.whatsnew_1_0_modules_detail),
-            ),
-        ),
-    )
+    val releases: List<WhatsNewRelease> = whatsNewReleases
 
     fun releaseFor(version: String): WhatsNewRelease? = releases.firstOrNull { it.version == version }
 }

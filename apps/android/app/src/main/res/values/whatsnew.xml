@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ⚠️ 自动生成 —— 请勿手改。改 packages/changelog/android.json 后运行 `pnpm changelog:gen`。 -->
+<resources>
+    <string name="whatsnew_1_1_0_title">从查看到管理</string>
+    <string name="whatsnew_1_1_0_detail">现在可以添加域名、新建并删除 D1 数据库与隧道，管理 Worker 变量/密钥/触发器/域名，以及隧道的公共主机名路由。</string>
+    <string name="whatsnew_1_0_0_title">OAuth 一键登录</string>
+    <string name="whatsnew_1_0_0_detail">用 Cloudflare 官方授权登录，无需手动粘贴 API Token。</string>
+    <string name="whatsnew_1_0_1_title">域名 · Workers · 存储全覆盖</string>
+    <string name="whatsnew_1_0_1_detail">DNS、流量分析、WAF、Snippets、Workers 实时日志、R2/D1/KV 存储一应俱全。</string>
+</resources>

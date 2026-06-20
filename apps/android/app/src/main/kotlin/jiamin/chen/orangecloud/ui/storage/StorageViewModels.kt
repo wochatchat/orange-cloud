@@ -42,12 +42,34 @@ class R2BucketListViewModel @Inject constructor(
     init { load() }
 }
 
+sealed interface D1DbEvent {
+    data object Created : D1DbEvent
+    data object Deleted : D1DbEvent
+    data class Error(val message: String?) : D1DbEvent
+}
+
+/** 创建/删除数据库的进行态（列表读取态仍走基类 uiState）。 */
+data class D1DbOpState(
+    val isCreating: Boolean = false,
+    val isDeleting: Boolean = false,
+)
+
 @HiltViewModel
 class D1DatabaseListViewModel @Inject constructor(
-    accountStore: AccountStore,
+    private val accountStore: AccountStore,
     private val storageRepository: StorageRepository,
     authRepository: AuthRepository,
 ) : StorageListViewModel<D1Database>(accountStore, authRepository.hasScope(Scopes.D1_READ)) {
+
+    /** 创建 / 删除数据库都需要 d1.write（读权限已是进入 D1 段的前置条件）。 */
+    val canWrite: Boolean = authRepository.hasScope(Scopes.D1_WRITE)
+
+    private val _opState = MutableStateFlow(D1DbOpState())
+    val opState: StateFlow<D1DbOpState> = _opState.asStateFlow()
+
+    private val eventChannel = Channel<D1DbEvent>(Channel.BUFFERED)
+    val events: Flow<D1DbEvent> = eventChannel.receiveAsFlow()
+
     // 列表端点的 num_tables / file_size 常年为 0，并发拉详情回填真实值（对齐 iOS）。
     // 某个库详情失败时回退到列表条目本身，不阻塞其余库。
     override suspend fun fetch(accountId: String): List<D1Database> = coroutineScope {
@@ -56,6 +78,42 @@ class D1DatabaseListViewModel @Inject constructor(
             .awaitAll()
     }
     init { load() }
+
+    /** 创建数据库：成功后把新库插到列表顶端。 */
+    fun create(name: String, locationHint: String?) {
+        if (!canWrite || _opState.value.isCreating) return
+        viewModelScope.launch {
+            _opState.update { it.copy(isCreating = true) }
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                val created = storageRepository.createDatabase(accountId, name, locationHint)
+                state.update { it.copy(items = listOf(created) + it.items) }
+                eventChannel.send(D1DbEvent.Created)
+            } catch (e: Exception) {
+                eventChannel.send(D1DbEvent.Error(e.message))
+            } finally {
+                _opState.update { it.copy(isCreating = false) }
+            }
+        }
+    }
+
+    /** 删除数据库：成功后从列表移除。不可恢复，调用前须经二次确认。 */
+    fun delete(database: D1Database) {
+        if (!canWrite || _opState.value.isDeleting) return
+        viewModelScope.launch {
+            _opState.update { it.copy(isDeleting = true) }
+            try {
+                val accountId = accountStore.selectedAccountId.value ?: error("no account")
+                storageRepository.deleteDatabase(accountId, database.uuid)
+                state.update { it.copy(items = it.items.filterNot { db -> db.uuid == database.uuid }) }
+                eventChannel.send(D1DbEvent.Deleted)
+            } catch (e: Exception) {
+                eventChannel.send(D1DbEvent.Error(e.message))
+            } finally {
+                _opState.update { it.copy(isDeleting = false) }
+            }
+        }
+    }
 }
 
 @HiltViewModel

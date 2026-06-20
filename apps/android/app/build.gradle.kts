@@ -38,8 +38,8 @@ android {
         applicationId = "jiamin.chen.orangecloud"
         minSdk = 31
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // OAuth 回调（Web 后端 302 跳回的自定义 scheme）

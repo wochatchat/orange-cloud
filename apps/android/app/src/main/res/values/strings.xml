@@ -47,7 +47,7 @@
     <string name="perm_kv">KV 存储</string>
     <string name="perm_kv_desc">读写键值</string>
     <string name="perm_tunnels">隧道</string>
-    <string name="perm_tunnels_desc">查看 Cloudflare Tunnel</string>
+    <string name="perm_tunnels_desc">查看隧道；读写可新建隧道、配置公共主机名路由</string>
     <string name="perm_waf">WAF</string>
     <string name="perm_waf_desc">查看与启停防火墙规则</string>
     <string name="perm_zone_settings">域名设置</string>
@@ -408,10 +408,6 @@
     <!-- 新功能弹窗 -->
     <string name="whatsnew_title">新功能</string>
     <string name="whatsnew_ok">好的</string>
-    <string name="whatsnew_1_0_oauth_title">OAuth 一键登录</string>
-    <string name="whatsnew_1_0_oauth_detail">用 Cloudflare 官方授权登录，无需手动粘贴 API Token。</string>
-    <string name="whatsnew_1_0_modules_title">域名 · Workers · 存储全覆盖</string>
-    <string name="whatsnew_1_0_modules_detail">DNS、流量分析、WAF、Snippets、Workers 实时日志、R2/D1/KV 存储一应俱全。</string>
 
     <!-- Paywall（Pro 闸门） -->
     <string name="paywall_title">Orange Cloud Pro</string>
@@ -426,4 +422,153 @@
     <string name="paywall_monthly">月付订阅</string>
     <string name="paywall_lifetime">一次性买断</string>
     <string name="paywall_note">订阅按 Google Play 计费，可随时取消。</string>
+
+    <!-- 添加域名（新建 Zone） -->
+    <string name="addzone_title">添加域名</string>
+    <string name="addzone_domain_label">域名</string>
+    <string name="addzone_domain_hint">输入你已注册的根域名（如 example.com），无需带 www 或 https://。</string>
+    <string name="addzone_account">添加到账号：%1$s</string>
+    <string name="addzone_ns_note">添加后，Cloudflare 会为该域名分配两个名称服务器。你需要登录域名注册商，把 NS 改成它们，域名才会激活。</string>
+    <string name="addzone_add">添加</string>
+    <string name="addzone_pending">待激活</string>
+    <string name="addzone_ns_title">名称服务器</string>
+    <string name="addzone_copy">复制名称服务器</string>
+    <string name="addzone_copied">已复制</string>
+    <string name="addzone_steps_title">接下来</string>
+    <string name="addzone_step1">登录你购买该域名的注册商（Registrar）。</string>
+    <string name="addzone_step2">找到「名称服务器（Nameservers）」设置。</string>
+    <string name="addzone_step3">删除原有名称服务器，替换为上方两个 Cloudflare 地址。</string>
+    <string name="addzone_step4">保存更改。激活通常需几分钟到几小时，最长可达 24 小时。</string>
+    <string name="addzone_done">完成</string>
+    <string name="addzone_ns_missing">Cloudflare 尚未返回名称服务器，请稍后在域名详情或 Cloudflare Dashboard 查看。</string>
+
+    <!-- D1 创建 / 删除 -->
+    <string name="d1_create_title">创建数据库</string>
+    <string name="d1_create">创建</string>
+    <string name="d1_created">已创建</string>
+    <string name="d1_name">数据库名称</string>
+    <string name="d1_location">主要位置</string>
+    <string name="d1_location_hint">主要位置决定数据库主副本所在区域，选择「自动」由 Cloudflare 就近分配。</string>
+    <string name="d1_loc_auto">自动</string>
+    <string name="d1_loc_wnam">北美西部</string>
+    <string name="d1_loc_enam">北美东部</string>
+    <string name="d1_loc_weur">欧洲西部</string>
+    <string name="d1_loc_eeur">欧洲东部</string>
+    <string name="d1_loc_apac">亚太地区</string>
+    <string name="d1_loc_oc">大洋洲</string>
+    <string name="d1_delete_title">删除数据库</string>
+    <string name="d1_delete_warn">此操作将永久删除数据库 %1$s 及其全部表和数据，无法撤销，也无法恢复。</string>
+    <string name="d1_delete_confirm_label">输入数据库名称以确认</string>
+    <string name="d1_delete_button">永久删除</string>
+
+    <!-- Worker 管理：变量与密钥 / 触发器 / 域名 -->
+    <string name="worker_manage_secrets">变量与密钥</string>
+    <string name="worker_manage_triggers">触发器</string>
+    <string name="worker_manage_domains">域名</string>
+    <string name="worker_secrets_title">变量与密钥</string>
+    <string name="worker_secrets_section">密钥</string>
+    <string name="worker_secrets_empty">暂无密钥</string>
+    <string name="worker_secrets_add">添加密钥</string>
+    <string name="worker_secrets_footer">密钥值出于安全无法读取，列表只显示名称。同名添加即覆盖。</string>
+    <string name="worker_secrets_readonly">当前授权仅可查看（缺少 workers-scripts.write）。</string>
+    <string name="worker_vars_section">环境变量</string>
+    <string name="worker_vars_empty">暂无变量</string>
+    <string name="worker_vars_add">添加变量</string>
+    <string name="worker_vars_footer">明文变量（plain_text），可读可改。改任一项不影响其它绑定。</string>
+    <string name="worker_var_add_title">添加变量</string>
+    <string name="worker_var_edit_title">编辑变量</string>
+    <string name="worker_secret_add_title">添加密钥</string>
+    <string name="worker_binding_name">名称</string>
+    <string name="worker_binding_name_hint">字母、数字、下划线，且不以数字开头。</string>
+    <string name="worker_binding_value">值</string>
+    <string name="worker_secret_value">值（保存后不可读取）</string>
+    <string name="worker_other_section">其它绑定（只读）</string>
+    <string name="worker_other_footer">KV / D1 / R2 等资源绑定在此查看，编辑请用 Wrangler 或 Dashboard。</string>
+    <string name="worker_bind_var">变量</string>
+    <string name="worker_bind_secret">密钥</string>
+    <string name="worker_bind_queue">队列</string>
+    <string name="worker_bind_service">Service 绑定</string>
+    <string name="worker_bind_browser">浏览器渲染</string>
+    <string name="worker_triggers_title">触发器</string>
+    <string name="worker_triggers_empty_desc">添加 Cron 表达式，让这个 Worker 按计划自动运行。</string>
+    <string name="worker_triggers_add">添加触发器</string>
+    <string name="worker_triggers_footer">Cron 按 UTC 时区执行。</string>
+    <string name="worker_cron_expr">Cron 表达式</string>
+    <string name="worker_cron_hint">标准 5 字段：分 时 日 月 周（UTC）。</string>
+    <string name="worker_cron_presets">常用</string>
+    <string name="worker_cron_5m">每 5 分钟</string>
+    <string name="worker_cron_hourly">每小时整点</string>
+    <string name="worker_cron_daily">每天 0 点（UTC）</string>
+    <string name="worker_cron_weekly">每周一 0 点（UTC）</string>
+    <string name="worker_cron_every_n">每 %1$d 分钟</string>
+    <string name="worker_cron_desc_hourly">每小时整点</string>
+    <string name="worker_cron_desc_daily">每天 %1$s（UTC）</string>
+    <string name="worker_cron_custom">自定义 Cron（UTC）</string>
+    <string name="worker_domains_title">域名</string>
+    <string name="worker_subdomain_section">workers.dev</string>
+    <string name="worker_subdomain_label">workers.dev 子域</string>
+    <string name="worker_subdomain_footer">开启后该 Worker 可经 脚本名.子域.workers.dev 访问。</string>
+    <string name="worker_subdomain_none">该账号未开通 workers.dev 子域</string>
+    <string name="worker_customdomains_section">自定义域</string>
+    <string name="worker_customdomains_empty">暂无自定义域</string>
+    <string name="worker_customdomains_add">挂载自定义域</string>
+    <string name="worker_customdomains_footer">把某个域名/子域直接指向该 Worker，无需 DNS 与证书配置。</string>
+    <string name="worker_routes_section">路由</string>
+    <string name="worker_routes_empty">暂无路由</string>
+    <string name="worker_routes_add">添加路由</string>
+    <string name="worker_routes_footer">用 URL 模式（如 example.com/api/*）把匹配请求交给该 Worker。</string>
+    <string name="worker_route_zone">域名</string>
+    <string name="worker_route_zone_pick">请选择</string>
+    <string name="worker_domain_hostname">主机名</string>
+    <string name="worker_domain_hostname_hint">完整主机名，须属于所选域名。</string>
+    <string name="worker_route_pattern">路由模式</string>
+    <string name="worker_route_pattern_hint">URL 模式，可用 * 通配，如 example.com/*。</string>
+    <string name="worker_attach_domain_title">挂载自定义域</string>
+    <string name="worker_add_route_title">添加路由</string>
+
+    <!-- Tunnel 管理：创建 / 连接令牌 / 公共主机名 / 危险操作 -->
+    <string name="tunnel_new">新建隧道</string>
+    <string name="tunnel_new_name">隧道名称</string>
+    <string name="tunnel_new_footer">将创建一个远程托管隧道（由 Dashboard / 本应用管理配置）。</string>
+    <string name="tunnel_create">创建</string>
+    <string name="tunnel_connect_section">运行命令</string>
+    <string name="tunnel_connect_intro">在目标机器上安装 cloudflared，并以管理员身份运行下面的命令，隧道即可连接。</string>
+    <string name="tunnel_connect_reveal">显示令牌</string>
+    <string name="tunnel_connect_hide">隐藏令牌</string>
+    <string name="tunnel_connect_copy">复制命令</string>
+    <string name="tunnel_connect_copied">已复制命令</string>
+    <string name="tunnel_connect_token_warn">令牌等同于隧道凭据，请妥善保管，不要公开分享。</string>
+    <string name="tunnel_connect_loading">获取令牌…</string>
+    <string name="tunnel_connect_failed">无法获取令牌</string>
+    <string name="tunnel_hostnames_section">公共主机名</string>
+    <string name="tunnel_hostnames_empty">还没有公共主机名，点下方添加。</string>
+    <string name="tunnel_hostnames_empty_ro">还没有公共主机名。</string>
+    <string name="tunnel_hostnames_add">添加公共主机名</string>
+    <string name="tunnel_hostnames_footer">把对外域名映射到本地服务。新增时会自动创建橙云代理的 CNAME。</string>
+    <string name="tunnel_hostnames_loading">加载配置…</string>
+    <string name="tunnel_local_note">该隧道为本地托管（config.yml），公共主机名请在 cloudflared 配置文件中管理。</string>
+    <string name="tunnel_danger_section">危险操作</string>
+    <string name="tunnel_cleanup">清理失活连接</string>
+    <string name="tunnel_cleanup_confirm_title">清理连接</string>
+    <string name="tunnel_cleanup_confirm_msg">移除已断开的连接记录；活跃的 cloudflared 会自动重连。</string>
+    <string name="tunnel_delete">删除隧道</string>
+    <string name="tunnel_delete_confirm_title">删除隧道</string>
+    <string name="tunnel_delete_confirm_msg">将删除该隧道并断开其连接，此操作不可撤销。</string>
+    <string name="tunnel_host_form_add">添加公共主机名</string>
+    <string name="tunnel_host_form_edit">编辑公共主机名</string>
+    <string name="tunnel_host_hostname">公共主机名</string>
+    <string name="tunnel_host_protocol">协议</string>
+    <string name="tunnel_host_service">本地服务</string>
+    <string name="tunnel_host_service_footer">cloudflared 把命中该主机名的请求转发到这个本地地址。</string>
+    <string name="tunnel_host_service_other">完整服务地址，如 unix:/path.sock</string>
+    <string name="tunnel_host_path">路径</string>
+    <string name="tunnel_host_path_hint">路径正则（可选），如 /api/.*</string>
+    <string name="tunnel_proto_other">其他</string>
+
+    <!-- 帮助与反馈 -->
+    <string name="settings_help">帮助与反馈</string>
+    <string name="settings_help_footer">问题反馈与建议会发送到我们的邮箱，并附带版本与设备信息（不含任何令牌或密钥）。</string>
+    <string name="settings_feedback">发送反馈</string>
+    <string name="feedback_subject">Orange Cloud 反馈</string>
+    <string name="feedback_no_mail">未找到邮件应用</string>
 </resources>

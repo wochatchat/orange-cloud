@@ -63,6 +63,18 @@ class CfApiClient @Inject constructor(
         executeRaw("DELETE", path, emptyList(), null, JSON_MEDIA_TYPE)
     }
 
+    /** JSON POST，只校验 success（写端点 result 可能为 null，如切换子域）。 */
+    suspend inline fun <reified B> postChecked(path: String, body: B) {
+        val payload = json.encodeToString(serializer<B>(), body).encodeToByteArray()
+        checkSuccess(executeRaw("POST", path, emptyList(), payload, JSON_MEDIA_TYPE))
+    }
+
+    /** JSON PUT，只校验 success（写端点 result 可能为 null）。 */
+    suspend inline fun <reified B> putChecked(path: String, body: B) {
+        val payload = json.encodeToString(serializer<B>(), body).encodeToByteArray()
+        checkSuccess(executeRaw("PUT", path, emptyList(), payload, JSON_MEDIA_TYPE))
+    }
+
     /** KV value 等非 JSON 信封端点：返回原始字节 */
     suspend fun getRaw(path: String, query: List<Pair<String, String>> = emptyList()): ByteArray =
         executeRaw("GET", path, query, null, null)
@@ -87,6 +99,39 @@ class CfApiClient @Inject constructor(
     /** 原始字节 PUT，只校验 success（R2 上传等 result 可能为 null）。 */
     suspend fun putRawVoid(path: String, body: ByteArray, contentType: String) {
         executeRaw("PUT", path, emptyList(), body, contentType)
+    }
+
+    /**
+     * 单 JSON part 的 multipart 请求（method 任意），只校验 success。
+     * Worker 改设置 PATCH .../settings 用——CF 要求 settings 作为 multipart form part 而非裸 JSON body。
+     */
+    suspend fun requestMultipartJsonChecked(
+        method: String,
+        path: String,
+        partName: String,
+        bodyJson: String,
+        query: List<Pair<String, String>> = emptyList(),
+    ) {
+        val boundary = "OrangeCloud-${UUID.randomUUID()}"
+        val sb = StringBuilder()
+        sb.append("--").append(boundary).append("\r\n")
+        sb.append("Content-Disposition: form-data; name=\"").append(partName).append("\"\r\n")
+        sb.append("Content-Type: application/json\r\n\r\n")
+        sb.append(bodyJson).append("\r\n")
+        sb.append("--").append(boundary).append("--\r\n")
+        val bytes = executeRaw(method, path, query, sb.toString().encodeToByteArray(), "multipart/form-data; boundary=$boundary")
+        checkSuccess(bytes)
+    }
+
+    /** 校验 2xx 响应体信封的 success（HTTP 200 但 success:false 时透出 CF 业务错误）。 */
+    @PublishedApi
+    internal fun checkSuccess(bytes: ByteArray) {
+        val env = runCatching {
+            json.decodeFromString(CfEnvelope.serializer(JsonElement.serializer()), bytes.decodeToString())
+        }.getOrNull()
+        if (env != null && !env.success) {
+            throw ApiError.Cloudflare(env.errors.map { ApiError.CfError(it.code, it.message) })
+        }
     }
 
     /** Snippets 创建/更新：multipart 带 metadata part + JS 模块文件 part（application/javascript+module）。 */

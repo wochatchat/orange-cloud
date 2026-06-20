@@ -26,6 +26,20 @@ data class Zone(
 @Serializable
 data class ZonePlan(val name: String)
 
+/**
+ * 新建 Zone（POST /zones）请求体。type="full"——Cloudflare 作权威 DNS，
+ * 响应返回分配的 name_servers，状态 pending，待用户在注册商处更换 NS 后激活。
+ */
+@Serializable
+data class CreateZoneRequest(
+    val name: String,
+    val type: String = "full",
+    val account: AccountRef,
+) {
+    @Serializable
+    data class AccountRef(val id: String)
+}
+
 /** DNS 记录（与 iOS Models/DNSRecord.swift 对应）。 */
 @Serializable
 data class DnsRecord(

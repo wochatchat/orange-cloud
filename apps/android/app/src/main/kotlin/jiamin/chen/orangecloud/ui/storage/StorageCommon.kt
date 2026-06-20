@@ -1,6 +1,8 @@
 package jiamin.chen.orangecloud.ui.storage
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -81,7 +83,8 @@ fun formatBytes(bytes: Long): String {
     return "%.1f %s".format(v, units[i])
 }
 
-/** 存储通用列表行：图标 + 标题 + 可选副标题 + 右箭头。 */
+/** 存储通用列表行：图标 + 标题 + 可选副标题 + 右箭头。onLongClick 提供长按操作（如删除）。 */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StorageRow(
     icon: ImageVector,
@@ -89,13 +92,20 @@ fun StorageRow(
     subtitle: String? = null,
     showChevron: Boolean = true,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
 ) {
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .let { if (onClick != null) it.clickable(onClick = onClick) else it },
+            .let {
+                when {
+                    onLongClick != null -> it.combinedClickable(onClick = onClick ?: {}, onLongClick = onLongClick)
+                    onClick != null -> it.clickable(onClick = onClick)
+                    else -> it
+                }
+            },
     ) {
         Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, tint = OcOrange, modifier = Modifier.size(24.dp))
