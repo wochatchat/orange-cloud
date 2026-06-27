@@ -19,6 +19,10 @@ final class R2BucketListViewModel {
     var usageByBucket: [String: R2BucketUsage] = [:]
     var isLoading = false
     var error: String?
+    var isCreating = false
+    var didCreate = false      // sensoryFeedback 触发器
+    var isDeleting = false
+    var didDelete = false      // sensoryFeedback 触发器
 
     private let service: R2Service
     private let analyticsService: AnalyticsService
@@ -26,6 +30,44 @@ final class R2BucketListViewModel {
     init(service: R2Service, analyticsService: AnalyticsService) {
         self.service = service
         self.analyticsService = analyticsService
+    }
+
+    /// 创建桶：成功后插到列表顶端，返回 true。
+    func create(accountId: String, name: String, locationHint: String?, storageClass: String?) async -> Bool {
+        guard !isCreating else { return false }
+        isCreating = true
+        error = nil
+        defer { isCreating = false }
+        do {
+            let created = try await service.createBucket(
+                accountId: accountId, name: name,
+                locationHint: locationHint, storageClass: storageClass
+            )
+            buckets.insert(created, at: 0)
+            didCreate.toggle()
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
+    /// 删除桶：成功后从列表移除，返回 true。Cloudflare 要求桶为空，删除前须经二次确认。
+    func delete(accountId: String, bucket: R2Bucket) async -> Bool {
+        guard !isDeleting else { return false }
+        isDeleting = true
+        error = nil
+        defer { isDeleting = false }
+        do {
+            try await service.deleteBucket(accountId: accountId, name: bucket.name)
+            buckets.removeAll { $0.name == bucket.name }
+            usageByBucket[bucket.name] = nil
+            didDelete.toggle()
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
     }
 
     func load(accountId: String) async {
@@ -581,8 +623,10 @@ final class D1TableViewModel {
         guard hasMore, !isLoading else { return }
         isLoading = true
         do {
+            // 先取下一页，成功后再推进 offset；否则瞬时失败会永久跳过这一页
+            let next = try await fetchPage(offset: offset + pageSize)
             offset += pageSize
-            rows.append(contentsOf: try await fetchPage(offset: offset))
+            rows.append(contentsOf: next)
         } catch {
             self.error = error.localizedDescription
         }
@@ -645,11 +689,49 @@ final class KVNamespaceListViewModel {
     var namespaces: [KVNamespace] = []
     var isLoading = false
     var error: String?
+    var isCreating = false
+    var didCreate = false      // sensoryFeedback 触发器
+    var isDeleting = false
+    var didDelete = false      // sensoryFeedback 触发器
 
     private let service: KVService
 
     init(service: KVService) {
         self.service = service
+    }
+
+    /// 创建命名空间：成功后插到列表顶端，返回 true。
+    func create(accountId: String, title: String) async -> Bool {
+        guard !isCreating else { return false }
+        isCreating = true
+        error = nil
+        defer { isCreating = false }
+        do {
+            let created = try await service.createNamespace(accountId: accountId, title: title)
+            namespaces.insert(created, at: 0)
+            didCreate.toggle()
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
+    }
+
+    /// 删除命名空间：成功后从列表移除，返回 true。连同全部键值不可恢复，删除前须经二次确认。
+    func delete(accountId: String, namespace: KVNamespace) async -> Bool {
+        guard !isDeleting else { return false }
+        isDeleting = true
+        error = nil
+        defer { isDeleting = false }
+        do {
+            try await service.deleteNamespace(accountId: accountId, namespaceId: namespace.id)
+            namespaces.removeAll { $0.id == namespace.id }
+            didDelete.toggle()
+            return true
+        } catch {
+            self.error = error.localizedDescription
+            return false
+        }
     }
 
     func load(accountId: String) async {

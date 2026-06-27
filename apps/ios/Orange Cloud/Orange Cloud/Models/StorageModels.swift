@@ -14,6 +14,15 @@ nonisolated struct R2BucketList: Codable, Sendable {
     let buckets: [R2Bucket]
 }
 
+/// POST /accounts/{id}/r2/buckets 请求体。R2 端点字段为 camelCase（与多数 CF API 不同）。
+/// locationHint 为空时编码器省略，由 Cloudflare 就近放置；storageClass 省略时默认 Standard。
+/// 司法辖区（EU 等）走 cf-r2-jurisdiction 头，此处不涉及。
+nonisolated struct R2CreateRequest: Codable, Sendable {
+    let name:         String
+    let locationHint: String?
+    let storageClass: String?
+}
+
 nonisolated struct R2Bucket: Codable, Identifiable, Hashable, Sendable {
     let name:         String
     let creationDate: String?
@@ -267,6 +276,11 @@ nonisolated struct D1QueryMeta: Codable, Sendable {
 
 nonisolated struct KVNamespace: Codable, Identifiable, Hashable, Sendable {
     let id:    String
+    let title: String
+}
+
+/// POST /accounts/{id}/storage/kv/namespaces 请求体（仅 title）
+nonisolated struct KVCreateRequest: Codable, Sendable {
     let title: String
 }
 

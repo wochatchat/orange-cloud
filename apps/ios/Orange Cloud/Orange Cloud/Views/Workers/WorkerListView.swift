@@ -17,10 +17,15 @@ struct WorkerListView: View {
     @Query private var cachedScripts: [CachedWorkerScript]
 
     @State private var viewModel: WorkerListViewModel
+    @State private var uploadViewModel: WorkerUploadViewModel
     @State private var searchText = ""
     @State private var tailTarget: CachedWorkerScript?
     @State private var showTailDenied = false
+    @State private var showCreate = false
+    @State private var createDenied = false
     @Namespace private var namespace
+
+    private var canWrite: Bool { auth.hasScope("workers-scripts.write") }
 
     init(session: SessionStore) {
         // 只读当前账号的脚本（多账号切换后缓存里会留有别的账号的条目）。
@@ -31,6 +36,7 @@ struct WorkerListView: View {
             sort: \CachedWorkerScript.id
         )
         _viewModel = State(initialValue: WorkerListViewModel(workerService: session.workerService))
+        _uploadViewModel = State(initialValue: WorkerUploadViewModel(service: session.workerService, accountId: accountId))
     }
 
     private var filteredScripts: [CachedWorkerScript] {
@@ -39,7 +45,7 @@ struct WorkerListView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        Group {
             Group {
                 if cachedScripts.isEmpty && viewModel.isLoading {
                     SkeletonList(rows: 8, trailing: true)
@@ -63,6 +69,11 @@ struct WorkerListView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
+                    Button("新建 Worker", systemImage: "plus") {
+                        if canWrite { showCreate = true } else { createDenied = true }
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
                     RefreshButton(
                         isLoading: viewModel.isLoading,
                         failed: viewModel.error != nil,
@@ -70,6 +81,12 @@ struct WorkerListView: View {
                     )
                 }
             }
+            .sheet(isPresented: $showCreate) {
+                WorkerUploadView(mode: .create, viewModel: uploadViewModel) {
+                    Task { await refresh() }
+                }
+            }
+            .sensoryFeedback(.success, trigger: uploadViewModel.didUpload)
             .task {
                 await refresh()
             }
@@ -77,6 +94,11 @@ struct WorkerListView: View {
                 Button("好", role: .cancel) {}
             } message: {
                 Text("当前授权未包含实时日志权限（workers-tail.read）。\n请在设置中退出登录后重新授权以启用此功能。")
+            }
+            .alert("权限不足", isPresented: $createDenied) {
+                Button("好", role: .cancel) {}
+            } message: {
+                Text("当前授权未包含 Workers 写权限（workers-scripts.write）。\n请在设置中退出登录后重新授权以启用此功能。")
             }
         }
     }

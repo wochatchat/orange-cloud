@@ -37,6 +37,11 @@ final class SessionStore {
     let emailRoutingService:       EmailRoutingService
     let rateLimitService:          RateLimitService
     let zeroTrustService:          ZeroTrustService
+    let queueService:              QueueService
+    let aiGatewayService:          AIGatewayService
+    let durableObjectService:      DurableObjectService
+    let workersAIService:          WorkersAIService
+    let hyperdriveService:         HyperdriveService
 
     var accounts: [Account] = []
     var selectedAccount: Account? {
@@ -82,6 +87,11 @@ final class SessionStore {
         self.emailRoutingService       = EmailRoutingService(client: client)
         self.rateLimitService          = RateLimitService(client: client)
         self.zeroTrustService          = ZeroTrustService(client: client)
+        self.queueService              = QueueService(client: client)
+        self.aiGatewayService          = AIGatewayService(client: client)
+        self.durableObjectService      = DurableObjectService(client: client)
+        self.workersAIService          = WorkersAIService(client: client)
+        self.hyperdriveService         = HyperdriveService(client: client)
     }
 
     /// 幂等加载账号列表，首个账号设为当前账号

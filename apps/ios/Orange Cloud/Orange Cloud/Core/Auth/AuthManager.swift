@@ -11,6 +11,7 @@
 import Foundation
 import AuthenticationServices
 import UIKit
+import WidgetKit
 
 nonisolated enum AuthError: LocalizedError {
     case invalidCallback
@@ -96,6 +97,8 @@ final class AuthManager {
         if let current = currentSession {
             AppLog.auth.info("active session scopes (\(current.scopes.count))=[\(current.scopes.joined(separator: " "))]")
         }
+        // 自愈：清掉 App Group 里已不再登录的身份残留的 Widget 数据（历史登出未清等）
+        WidgetDataStore.reconcile(liveSessionIds: Set(sessions.map { $0.id.uuidString }))
     }
 
     /// 一次性迁移：移除 iCloud 同步功能后，把已登录身份的 token 从「可同步」钥匙串条目
@@ -484,6 +487,9 @@ final class AuthManager {
             currentSessionId = sessions.first?.id
         }
         persist()
+        // 清掉该身份在 App Group 的 Widget 数据，否则其账号 / 域名仍会出现在 Widget 选择器
+        WidgetDataStore.purge(sessionId: id.uuidString)
+        WidgetCenter.shared.reloadAllTimelines()
         if sessions.isEmpty {
             SpotlightIndexer.deleteAll()
         }

@@ -57,6 +57,18 @@ nonisolated struct WidgetSnapshot: Codable, Sendable {
 
     /// 当前账号的总览
     static func load() -> WidgetSnapshot? { load(accountId: currentAccountId()) }
+
+    /// 退出身份时清掉这些账号的总览快照；当前指针指向其中之一时，连同指针与旧单键一并清掉
+    static func purge(accountIds: Set<String>) {
+        guard let d = defaults(), !accountIds.isEmpty else { return }
+        var map = loadMap()
+        for id in accountIds { map.removeValue(forKey: id) }
+        if let data = try? JSONEncoder().encode(map) { d.set(data, forKey: byAccountKey) }
+        if let current = currentAccountId(), accountIds.contains(current) {
+            d.removeObject(forKey: currentAccountKey)
+            d.removeObject(forKey: legacyKey)
+        }
+    }
 }
 
 // MARK: - 可供 Widget 选择的账号目录（picker 数据源，App 加载账号时写入）
@@ -130,6 +142,61 @@ nonisolated enum WidgetDataStore {
         guard let d = defaults(), let data = d.data(forKey: accountsKey),
               let accts = try? JSONDecoder().decode([WidgetAccount].self, from: data) else { return [] }
         return accts
+    }
+
+    /// 退出某登录身份时，清掉它名下账号在 App Group 的全部 Widget 数据
+    /// （账号目录条目 / Zone 指标 / 用量 / 总览快照），避免登出后仍出现在 Widget 选择器或卡片里。
+    static func purge(sessionId: String) {
+        guard let d = defaults() else { return }
+        let all = loadAccounts()
+        let removedIds = Set(all.filter { $0.sessionId == sessionId }.map(\.id))
+
+        // 账号目录：移除该身份的条目
+        let keptAccounts = all.filter { $0.sessionId != sessionId }
+        if let data = try? JSONEncoder().encode(keptAccounts) { d.set(data, forKey: accountsKey) }
+
+        guard !removedIds.isEmpty else { return }
+
+        // Zone 指标：移除这些账号的 zone（无账号归属的旧快照保留）
+        let keptZones = loadZones().filter { zone in
+            guard let acc = zone.accountId else { return true }
+            return !removedIds.contains(acc)
+        }
+        if let data = try? JSONEncoder().encode(keptZones) { d.set(data, forKey: zonesKey) }
+
+        // 用量：移除这些账号
+        var usageMap = loadUsageMap()
+        for id in removedIds { usageMap.removeValue(forKey: id) }
+        if let data = try? JSONEncoder().encode(usageMap) { d.set(data, forKey: usageByAccountKey) }
+
+        // 总览快照 + 当前指针
+        WidgetSnapshot.purge(accountIds: removedIds)
+    }
+
+    /// 对齐当前仍登录的身份：清掉目录里不属于任何在线身份的账号及其 Zone / 用量 / 总览。
+    /// 自愈历史遗留（如登出未清、或登出流程中途失败导致的残留）。App 启动时调用。
+    static func reconcile(liveSessionIds: Set<String>) {
+        guard let d = defaults() else { return }
+        let all = loadAccounts()
+        let kept = all.filter { liveSessionIds.contains($0.sessionId) }
+        guard kept.count != all.count else { return }   // 无残留，免写
+
+        if let data = try? JSONEncoder().encode(kept) { d.set(data, forKey: accountsKey) }
+
+        let liveAccountIds = Set(kept.map(\.id))
+        let keptZones = loadZones().filter { zone in
+            guard let acc = zone.accountId else { return true }
+            return liveAccountIds.contains(acc)
+        }
+        if let data = try? JSONEncoder().encode(keptZones) { d.set(data, forKey: zonesKey) }
+
+        let removedIds = Set(all.map(\.id)).subtracting(liveAccountIds)
+        if !removedIds.isEmpty {
+            var usageMap = loadUsageMap()
+            for id in removedIds { usageMap.removeValue(forKey: id) }
+            if let data = try? JSONEncoder().encode(usageMap) { d.set(data, forKey: usageByAccountKey) }
+            WidgetSnapshot.purge(accountIds: removedIds)
+        }
     }
 
     // ── Zone 指标（按账号 upsert，跨账号并存；zone id 全局唯一）──

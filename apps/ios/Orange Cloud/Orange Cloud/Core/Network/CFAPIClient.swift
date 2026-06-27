@@ -269,6 +269,135 @@ actor CFAPIClient {
         return try Self.decode(data, path: path, method: method)
     }
 
+    /// 用外部 Bearer（Pages 资源上传 JWT 等，非 OAuth token）发 JSON 请求，返回 2xx 原始响应体。
+    /// 不做 token 刷新 / 401 重试——JWT 自带短有效期，失败即抛由调用方处理。
+    func bearerJSON(method: String, path: String, bearer: String, body: Data) async throws -> Data {
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
+        components.percentEncodedPath += "/" + path
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = method
+        request.setValue("Bearer \(bearer)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = body
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            AppLog.network.error("\(method) /\(Self.logPath(path)) (jwt) network error: \(error.localizedDescription)")
+            throw APIError.networkError(error)
+        }
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.networkError(URLError(.badServerResponse))
+        }
+        guard (200...299).contains(http.statusCode) else {
+            AppLog.network.error("\(method) /\(Self.logPath(path)) (jwt) -> \(http.statusCode)\(Self.cfErrorSummary(data))")
+            throw Self.mapHTTPError(status: http.statusCode, data: data)
+        }
+        return data
+    }
+
+    /// multipart/form-data 表单字段写入，指定 method（Pages 创建部署：POST 一个 manifest 字段）
+    func multipartFields<T: Codable & Sendable>(method: String, _ path: String, fields: [String: String]) async throws -> T {
+        let boundary = "OrangeCloud-\(UUID().uuidString)"
+        var body = Data()
+        for (name, value) in fields {
+            body.append(Data("--\(boundary)\r\n".utf8))
+            body.append(Data("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".utf8))
+            body.append(Data(value.utf8))
+            body.append(Data("\r\n".utf8))
+        }
+        body.append(Data("--\(boundary)--\r\n".utf8))
+
+        let (data, _) = try await performRequest(
+            method: method, path: path, queryItems: [], body: body,
+            contentType: "multipart/form-data; boundary=\(boundary)"
+        )
+        return try Self.decode(data, path: path, method: method)
+    }
+
+    /// 一个 JSON part + 多个文件 part 的 multipart（多模块 Worker 上传：metadata + 各模块）
+    func multipartRequest<T: Codable & Sendable, M: Encodable & Sendable>(
+        method: String,
+        _ path: String,
+        queryItems: [URLQueryItem] = [],
+        jsonPartName: String,
+        jsonPart: M,
+        files: [(name: String, contentType: String, content: Data)]
+    ) async throws -> T {
+        let boundary = "OrangeCloud-\(UUID().uuidString)"
+        var body = Data()
+
+        let json = try JSONEncoder().encode(jsonPart)
+        body.append(Data("--\(boundary)\r\n".utf8))
+        body.append(Data("Content-Disposition: form-data; name=\"\(jsonPartName)\"\r\n".utf8))
+        body.append(Data("Content-Type: application/json\r\n\r\n".utf8))
+        body.append(json)
+        body.append(Data("\r\n".utf8))
+
+        for file in files {
+            body.append(Data("--\(boundary)\r\n".utf8))
+            body.append(Data("Content-Disposition: form-data; name=\"\(file.name)\"; filename=\"\(file.name)\"\r\n".utf8))
+            body.append(Data("Content-Type: \(file.contentType)\r\n\r\n".utf8))
+            body.append(file.content)
+            body.append(Data("\r\n".utf8))
+        }
+
+        body.append(Data("--\(boundary)--\r\n".utf8))
+
+        let (data, _) = try await performRequest(
+            method: method, path: path, queryItems: queryItems, body: body,
+            contentType: "multipart/form-data; boundary=\(boundary)"
+        )
+        return try Self.decode(data, path: path, method: method)
+    }
+
+    /// 用外部 Bearer（Workers 资源上传 session JWT）发 multipart 表单，返回 2xx 原始响应体。
+    /// 每个 part 的字段名 = 文件名 = 资源哈希；body 已是 base64 文本（配合 ?base64=true）。
+    func bearerMultipart(
+        method: String,
+        path: String,
+        queryItems: [URLQueryItem],
+        bearer: String,
+        parts: [(name: String, contentType: String, body: Data)]
+    ) async throws -> Data {
+        let boundary = "OrangeCloud-\(UUID().uuidString)"
+        var body = Data()
+        for part in parts {
+            body.append(Data("--\(boundary)\r\n".utf8))
+            body.append(Data("Content-Disposition: form-data; name=\"\(part.name)\"; filename=\"\(part.name)\"\r\n".utf8))
+            body.append(Data("Content-Type: \(part.contentType)\r\n\r\n".utf8))
+            body.append(part.body)
+            body.append(Data("\r\n".utf8))
+        }
+        body.append(Data("--\(boundary)--\r\n".utf8))
+
+        var components = URLComponents(url: baseURL, resolvingAgainstBaseURL: false)!
+        components.percentEncodedPath += "/" + path
+        if !queryItems.isEmpty { components.queryItems = queryItems }
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = method
+        request.setValue("Bearer \(bearer)", forHTTPHeaderField: "Authorization")
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.httpBody = body
+
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await session.data(for: request)
+        } catch {
+            AppLog.network.error("\(method) /\(Self.logPath(path)) (jwt mp) network error: \(error.localizedDescription)")
+            throw APIError.networkError(error)
+        }
+        guard let http = response as? HTTPURLResponse else {
+            throw APIError.networkError(URLError(.badServerResponse))
+        }
+        guard (200...299).contains(http.statusCode) else {
+            AppLog.network.error("\(method) /\(Self.logPath(path)) (jwt mp) -> \(http.statusCode)\(Self.cfErrorSummary(data))")
+            throw Self.mapHTTPError(status: http.statusCode, data: data)
+        }
+        return data
+    }
+
     /// GraphQL Analytics API。信封是 {data, errors}（GraphQL 错误时 HTTP 仍为 200），
     /// 与 REST 的 {result, success} 不同。复用 request 自动获得 Token 刷新与 401 重试。
     func graphQL<D: Codable & Sendable, V: Codable & Sendable>(

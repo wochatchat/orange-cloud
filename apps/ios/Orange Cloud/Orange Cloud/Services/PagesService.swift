@@ -19,18 +19,41 @@ struct PagesService {
     // MARK: - 项目
 
     func listProjects(accountId: String) async throws -> [PagesProject] {
-        let response: CFAPIResponse<[PagesProject]> = try await client.get(
-            "accounts/\(accountId)/pages/projects"
-        )
-        guard response.success, let projects = response.result else {
-            throw response.toAPIError()
+        var all: [PagesProject] = []
+        var page = 1
+        while true {
+            let response: CFAPIResponseArray<PagesProject> = try await client.get(
+                "accounts/\(accountId)/pages/projects",
+                queryItems: [
+                    URLQueryItem(name: "page",     value: String(page)),
+                    URLQueryItem(name: "per_page", value: "50"),
+                ]
+            )
+            guard response.success else { throw response.toAPIError() }
+            let pageItems = response.result ?? []
+            all.append(contentsOf: pageItems)
+            let totalPages = response.resultInfo?.totalPages ?? 1
+            guard page < totalPages, !pageItems.isEmpty else { break }
+            page += 1
         }
-        return projects
+        return all
     }
 
     func getProject(accountId: String, projectName: String) async throws -> PagesProject {
         let response: CFAPIResponse<PagesProject> = try await client.get(
             "accounts/\(accountId)/pages/projects/\(projectName)"
+        )
+        guard response.success, let project = response.result else {
+            throw response.toAPIError()
+        }
+        return project
+    }
+
+    /// 创建项目（page.write）。建一个 Direct Upload 空项目，返回新建的 PagesProject。
+    func createProject(accountId: String, name: String, productionBranch: String) async throws -> PagesProject {
+        let response: CFAPIResponse<PagesProject> = try await client.post(
+            "accounts/\(accountId)/pages/projects",
+            body: PagesCreateRequest(name: name, productionBranch: productionBranch)
         )
         guard response.success, let project = response.result else {
             throw response.toAPIError()
@@ -56,14 +79,27 @@ struct PagesService {
 
     // MARK: - 部署
 
+    /// 部署列表（CF Pages 默认每页 25，须翻页，否则活跃项目的旧部署 / 回滚目标取不到）
     func listDeployments(accountId: String, projectName: String) async throws -> [PagesDeployment] {
-        let response: CFAPIResponse<[PagesDeployment]> = try await client.get(
-            "accounts/\(accountId)/pages/projects/\(projectName)/deployments"
-        )
-        guard response.success, let deployments = response.result else {
-            throw response.toAPIError()
+        var all: [PagesDeployment] = []
+        var page = 1
+        while true {
+            let response: CFAPIResponseArray<PagesDeployment> = try await client.get(
+                "accounts/\(accountId)/pages/projects/\(projectName)/deployments",
+                queryItems: [
+                    URLQueryItem(name: "page",     value: String(page)),
+                    URLQueryItem(name: "per_page", value: "25"),
+                ]
+            )
+            guard response.success else { throw response.toAPIError() }
+            let pageItems = response.result ?? []
+            all.append(contentsOf: pageItems)
+            let totalPages = response.resultInfo?.totalPages ?? 1
+            // 安全上限：避免极端情况下无限翻页（活跃项目部署可能很多，取近 10 页≈250 条足够）
+            guard page < totalPages, !pageItems.isEmpty, page < 10 else { break }
+            page += 1
         }
-        return deployments
+        return all
     }
 
     func getDeployment(accountId: String, projectName: String, deploymentId: String) async throws -> PagesDeployment {
@@ -102,5 +138,59 @@ struct PagesService {
 
     func deleteDeployment(accountId: String, projectName: String, deploymentId: String) async throws {
         try await client.delete("accounts/\(accountId)/pages/projects/\(projectName)/deployments/\(deploymentId)")
+    }
+
+    // MARK: - 直接上传部署（Direct Upload）
+    //
+    // 流程对齐 wrangler：① 取上传 JWT → ② check-missing 问服务端缺哪些资源
+    // → ③ 把缺的资源 base64 分批 upload → ④ upsert-hashes 关联全部哈希
+    // → ⑤ 带 manifest（路径→哈希）创建部署。资源端点用 JWT（非 OAuth token）鉴权。
+    //
+
+    /// 取资源上传用的短期 JWT
+    func uploadToken(accountId: String, projectName: String) async throws -> String {
+        let response: CFAPIResponse<PagesUploadToken> = try await client.get(
+            "accounts/\(accountId)/pages/projects/\(projectName)/upload-token"
+        )
+        guard response.success, let token = response.result else { throw response.toAPIError() }
+        return token.jwt
+    }
+
+    /// 询问服务端缺哪些资源哈希（仅缺的才需上传）
+    func checkMissingAssets(jwt: String, hashes: [String]) async throws -> [String] {
+        let body = try JSONEncoder().encode(PagesHashesBody(hashes: hashes))
+        let data = try await client.bearerJSON(method: "POST", path: "pages/assets/check-missing", bearer: jwt, body: body)
+        let response = try JSONDecoder().decode(CFAPIResponse<[String]>.self, from: data)
+        guard response.success else { throw response.toAPIError() }
+        return response.result ?? []
+    }
+
+    /// 上传一批资源（base64）
+    func uploadAssets(jwt: String, payloads: [PagesAssetUpload]) async throws {
+        let body = try JSONEncoder().encode(payloads)
+        let data = try await client.bearerJSON(method: "POST", path: "pages/assets/upload", bearer: jwt, body: body)
+        // result 可能是布尔或计数，只关心 success
+        let response = try JSONDecoder().decode(CFAPIResponse<JSONValue>.self, from: data)
+        guard response.success else { throw response.toAPIError() }
+    }
+
+    /// 关联（保活）本次部署涉及的全部哈希
+    func upsertHashes(jwt: String, hashes: [String]) async throws {
+        let body = try JSONEncoder().encode(PagesHashesBody(hashes: hashes))
+        let data = try await client.bearerJSON(method: "POST", path: "pages/assets/upsert-hashes", bearer: jwt, body: body)
+        let response = try JSONDecoder().decode(CFAPIResponse<JSONValue>.self, from: data)
+        guard response.success else { throw response.toAPIError() }
+    }
+
+    /// 带 manifest 创建部署（manifest 为「/路径」→ 资源哈希 的 JSON）
+    func createDeployment(accountId: String, projectName: String, manifest: [String: String]) async throws -> PagesDeployment {
+        let manifestJSON = String(decoding: try JSONEncoder().encode(manifest), as: UTF8.self)
+        let response: CFAPIResponse<PagesDeployment> = try await client.multipartFields(
+            method: "POST",
+            "accounts/\(accountId)/pages/projects/\(projectName)/deployments",
+            fields: ["manifest": manifestJSON]
+        )
+        guard response.success, let deployment = response.result else { throw response.toAPIError() }
+        return deployment
     }
 }

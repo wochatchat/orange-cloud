@@ -135,11 +135,6 @@ struct DashboardView: View {
                         .islandReveal(4)
                     bulkRedirectsSection
                         .islandReveal(5)
-                    // Pages：仅在已授予 page.read 时显示（点亮 PermissionModels 的 pages 条目后生效）
-                    if auth.hasScope("page.read") {
-                        pagesSection
-                            .islandReveal(6)
-                    }
                 }
                 .padding(OCLayout.pagePadding)
             }
@@ -1056,22 +1051,6 @@ struct DashboardView: View {
         .glassIsland(cornerRadius: 24)
     }
 
-    // MARK: - Pages（account 级，page.read 授予后显示）
-
-    private var pagesSection: some View {
-        ProGatedNavigationLink(
-            label: "Cloudflare Pages",
-            systemImage: "doc.richtext",
-            requiredScope: "page.read",
-            feature: .pages,
-            showsChevron: true
-        ) {
-            PagesProjectListView(session: session)
-        }
-        .padding(.horizontal, OCLayout.islandPadding + 2)
-        .padding(.vertical, 12)
-        .glassIsland(cornerRadius: 24)
-    }
 }
 
 // MARK: - 用量宫格的服务与瓦片

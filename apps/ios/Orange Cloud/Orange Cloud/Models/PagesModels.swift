@@ -190,5 +190,81 @@ nonisolated struct PagesProjectUpdate: Codable, Sendable {
     }
 }
 
+/// POST /accounts/{id}/pages/projects 请求体。仅建一个 Direct Upload 空项目
+/// （手机端无法上传构建产物 / 连 Git，建后需用 Wrangler 或 Dashboard 部署）。
+nonisolated struct PagesCreateRequest: Codable, Sendable {
+    let name:             String
+    let productionBranch: String
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case productionBranch = "production_branch"
+    }
+}
+
 /// retry / rollback 的空 POST 体
 nonisolated struct PagesEmptyBody: Codable, Sendable {}
+
+// MARK: - 直接上传部署（Direct Upload）
+
+/// GET .../upload-token 的 result（资源上传用的短期 JWT）
+nonisolated struct PagesUploadToken: Codable, Sendable {
+    let jwt: String
+}
+
+/// POST /pages/assets/upload 的单条载荷（key=资源哈希，value=base64 内容）
+nonisolated struct PagesAssetUpload: Codable, Sendable {
+    let key:      String
+    let value:    String
+    let metadata: PagesAssetMetadata
+    let base64:   Bool
+}
+
+nonisolated struct PagesAssetMetadata: Codable, Sendable {
+    let contentType: String     // CF 期望 camelCase contentType
+}
+
+/// check-missing / upsert-hashes 的请求体
+nonisolated struct PagesHashesBody: Codable, Sendable {
+    let hashes: [String]
+}
+
+/// 待部署的单个文件。path 以 / 开头（如 /index.html）；contentType 按扩展名推断。
+nonisolated struct PagesDeployFile: Sendable, Identifiable {
+    let path: String
+    let data: Data
+
+    var id: String { path }
+    var contentType: String { PagesMime.type(forPath: path) }
+}
+
+/// 按扩展名推断 MIME（覆盖常见静态资源，其余回退 octet-stream）
+nonisolated enum PagesMime {
+    static func type(forPath path: String) -> String {
+        switch (path as NSString).pathExtension.lowercased() {
+        case "html", "htm":   "text/html"
+        case "css":           "text/css"
+        case "js", "mjs":     "application/javascript"
+        case "json":          "application/json"
+        case "map":           "application/json"
+        case "webmanifest":   "application/manifest+json"
+        case "svg":           "image/svg+xml"
+        case "png":           "image/png"
+        case "jpg", "jpeg":   "image/jpeg"
+        case "gif":           "image/gif"
+        case "webp":          "image/webp"
+        case "avif":          "image/avif"
+        case "ico":           "image/x-icon"
+        case "txt":           "text/plain"
+        case "md":            "text/markdown"
+        case "xml":           "application/xml"
+        case "pdf":           "application/pdf"
+        case "wasm":          "application/wasm"
+        case "woff":          "font/woff"
+        case "woff2":         "font/woff2"
+        case "ttf":           "font/ttf"
+        case "otf":           "font/otf"
+        default:              "application/octet-stream"
+        }
+    }
+}

@@ -9,23 +9,34 @@ import SwiftUI
 
 struct PagesProjectDetailView: View {
 
+    @Environment(AuthManager.self) private var auth
     @State private var viewModel: PagesProjectDetailViewModel
+    @State private var deployViewModel: PagesDeployViewModel
     @State private var showDeleteConfirm = false
+    @State private var showDeploy = false
     @Environment(\.dismiss) private var dismiss
 
     init(project: PagesProject, session: SessionStore) {
+        let accountId = session.selectedAccount?.id ?? ""
         _viewModel = State(initialValue: PagesProjectDetailViewModel(
             project: project,
-            accountId: session.selectedAccount?.id ?? "",
+            accountId: accountId,
             service: session.pagesService
+        ))
+        _deployViewModel = State(initialValue: PagesDeployViewModel(
+            service: session.pagesService,
+            accountId: accountId,
+            projectName: project.name
         ))
     }
 
     private var project: PagesProject { viewModel.project }
+    private var canWrite: Bool { auth.hasScope("page.write") }
 
     var body: some View {
         List {
             infoSection
+            if canWrite { deploySection }
             deploymentsSection
             envVarsSection
             configSection
@@ -39,7 +50,16 @@ struct PagesProjectDetailView: View {
             await viewModel.refreshProject()
             await viewModel.loadDeployments()
         }
+        .sheet(isPresented: $showDeploy) {
+            PagesDeployView(viewModel: deployViewModel) {
+                Task {
+                    await viewModel.loadDeployments()
+                    await viewModel.refreshProject()
+                }
+            }
+        }
         .sensoryFeedback(.success, trigger: viewModel.didMutate)
+        .sensoryFeedback(.success, trigger: deployViewModel.phase == .done)
         .confirmationDialog("删除项目「\(project.name)」？", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
             Button("删除项目", role: .destructive) {
                 Task { if await viewModel.deleteProject() { dismiss() } }
@@ -86,6 +106,28 @@ struct PagesProjectDetailView: View {
             }
         } header: {
             Text("项目")
+        }
+        .glassRow()
+    }
+
+    // MARK: - 上传部署（Direct Upload）
+
+    private var deploySection: some View {
+        Section {
+            Button {
+                showDeploy = true
+            } label: {
+                HStack(spacing: 12) {
+                    TintIcon(systemImage: "arrow.up.circle", color: .ocOrange)
+                    Text("上传部署")
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+            }
+        } footer: {
+            Text("粘贴代码或选择文件 / ZIP，直接上传生成一次新部署。")
         }
         .glassRow()
     }

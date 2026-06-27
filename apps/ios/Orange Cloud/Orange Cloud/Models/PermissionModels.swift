@@ -245,6 +245,43 @@ extension FeaturePermission {
             editScopes: [],
             isRequired: false
         ),
+        // 开发者平台（scope 均已在 OAuth client 注册，见 dash 实列）
+        .init(
+            id: "queues",
+            title: String(localized: "Queues"),
+            description: String(localized: "查看与管理消息队列"),
+            icon: "tray.2",
+            readScopes: ["queues.read"],
+            editScopes: ["queues.write"],
+            isRequired: false
+        ),
+        .init(
+            id: "ai_gateway",
+            title: String(localized: "AI Gateway"),
+            description: String(localized: "查看与管理 AI Gateway 网关"),
+            icon: "brain.head.profile",
+            readScopes: ["aig.read"],
+            editScopes: ["aig.write"],
+            isRequired: false
+        ),
+        .init(
+            id: "workers_ai",
+            title: String(localized: "Workers AI"),
+            description: String(localized: "浏览可用的 Workers AI 模型"),
+            icon: "brain",
+            readScopes: ["ai.read"],
+            editScopes: [],
+            isRequired: false
+        ),
+        .init(
+            id: "hyperdrive",
+            title: "Hyperdrive",
+            description: String(localized: "查看与管理数据库加速配置"),
+            icon: "bolt.horizontal.circle",
+            readScopes: ["query-cache.read"],
+            editScopes: ["query-cache.write"],
+            isRequired: false
+        ),
     ]
 
     // MARK: - Scope 构建

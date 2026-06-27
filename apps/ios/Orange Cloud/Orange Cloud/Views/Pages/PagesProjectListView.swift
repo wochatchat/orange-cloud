@@ -11,8 +11,14 @@ struct PagesProjectListView: View {
 
     let session: SessionStore
 
+    @Environment(AuthManager.self) private var auth
     @State private var viewModel: PagesProjectListViewModel
     @State private var searchText = ""
+    @State private var showCreate = false
+    @State private var writeDenied = false
+
+    /// 创建项目需要写权限（page.read 已是进入本页的前置条件）
+    private var canWrite: Bool { auth.hasScope("page.write") }
 
     init(session: SessionStore) {
         self.session = session
@@ -32,7 +38,14 @@ struct PagesProjectListView: View {
                 ContentUnavailableView {
                     Label("没有 Pages 项目", systemImage: "doc.richtext")
                 } description: {
-                    Text("在 Cloudflare Dashboard 创建 Pages 项目后，在此查看部署、重试 / 回滚与构建配置。")
+                    Text(canWrite ? String(localized: "点击右上角 + 创建项目，或在此查看部署、重试 / 回滚与构建配置。") : String(localized: "在 Cloudflare Dashboard 创建 Pages 项目后，在此查看部署、重试 / 回滚与构建配置。"))
+                } actions: {
+                    if canWrite {
+                        Button("创建项目") { showCreate = true }
+                            .buttonStyle(.borderedProminent)
+                            .tint(Color.ocOrangePressed)
+                            .fontWeight(.bold)
+                    }
                 }
             } else if filtered.isEmpty {
                 ContentUnavailableView.search(text: searchText)
@@ -59,7 +72,23 @@ struct PagesProjectListView: View {
         .navigationTitle(Text(verbatim: "Pages"))
         .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $searchText, prompt: "搜索项目")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("创建项目", systemImage: "plus") {
+                    if canWrite { showCreate = true } else { writeDenied = true }
+                }
+            }
+        }
+        .sheet(isPresented: $showCreate) {
+            PagesCreateView(viewModel: viewModel, accountId: session.selectedAccount?.id ?? "")
+        }
+        .sensoryFeedback(.success, trigger: viewModel.didCreate)
         .task { await load() }
+        .alert("权限不足", isPresented: $writeDenied) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("当前授权未包含 Pages 写权限（page.write）。\n请在设置中退出登录后重新授权以启用此功能。")
+        }
         .alert("出错了", isPresented: .init(
             get: { viewModel.error != nil }, set: { if !$0 { viewModel.error = nil } }
         )) {

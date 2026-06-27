@@ -25,6 +25,28 @@ struct R2Service {
         return list.buckets
     }
 
+    /// 创建桶（workers-r2.write）。locationHint 为空走自动放置，storageClass 为空默认 Standard。
+    func createBucket(
+        accountId: String,
+        name: String,
+        locationHint: String? = nil,
+        storageClass: String? = nil
+    ) async throws -> R2Bucket {
+        let response: CFAPIResponse<R2Bucket> = try await client.post(
+            "accounts/\(accountId)/r2/buckets",
+            body: R2CreateRequest(name: name, locationHint: locationHint, storageClass: storageClass)
+        )
+        guard response.success, let bucket = response.result else {
+            throw response.toAPIError()
+        }
+        return bucket
+    }
+
+    /// 删除桶（workers-r2.write）。Cloudflare 要求桶必须为空，否则报错。
+    func deleteBucket(accountId: String, name: String) async throws {
+        try await client.delete("accounts/\(accountId)/r2/buckets/\(name)")
+    }
+
     /// 下载对象内容（原始字节）。key 含特殊字符需预编码。
     func getObjectData(accountId: String, bucketName: String, key: String) async throws -> Data {
         try await client.getRaw(
