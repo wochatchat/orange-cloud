@@ -1,5 +1,46 @@
 [
   {
+    "version": "1.7.1",
+    "date": "2026.06.28",
+    "channel": "App Store",
+    "inApp": false,
+    "items": [
+      {
+        "icon": "wrench.and.screwdriver.fill",
+        "title": {
+          "zh-Hans": "修复与优化",
+          "en": "Fixes & improvements",
+          "zh-Hant": "修復與優化",
+          "zh-HK": "修復與優化",
+          "ja": "修正と改善",
+          "es-MX": "Correcciones y mejoras",
+          "ko": "버그 수정 및 개선",
+          "pt-BR": "Correções e melhorias",
+          "pt-PT": "Correções e melhorias",
+          "de": "Fehlerbehebungen und Verbesserungen",
+          "fr": "Corrections et améliorations",
+          "ar": "إصلاحات وتحسينات",
+          "tr": "Düzeltmeler ve iyileştirmeler"
+        },
+        "detail": {
+          "zh-Hans": "修复「开发者平台」中 Workers 打开缓慢或无响应、点按后无法进入详情，以及 Pages 项目列表加载报错的问题。",
+          "en": "Fixes issues in the Developer Platform where Workers opened slowly or stopped responding and wouldn't open details when tapped, plus a loading error on the Pages project list.",
+          "zh-Hant": "修復「開發者平台」中 Workers 開啟緩慢或無回應、點按後無法進入詳情，以及 Pages 專案清單載入發生錯誤的問題。",
+          "zh-HK": "修復「開發者平台」中 Workers 開啟緩慢或無回應、點按後無法進入詳情，以及 Pages 專案清單載入發生錯誤的問題。",
+          "ja": "「開発者プラットフォーム」で Workers の表示が遅い・反応しない、タップしても詳細が開かない問題と、Pages プロジェクト一覧の読み込みエラーを修正しました。",
+          "es-MX": "Corrige problemas en la plataforma para desarrolladores donde Workers se abría lento o dejaba de responder y no abría los detalles al tocarlo, además de un error al cargar la lista de proyectos de Pages.",
+          "ko": "개발자 플랫폼에서 Workers가 느리게 열리거나 응답하지 않고 탭해도 세부 정보가 열리지 않던 문제와 Pages 프로젝트 목록 로딩 오류를 수정했습니다.",
+          "pt-BR": "Corrige problemas na plataforma do desenvolvedor em que o Workers abria devagar ou parava de responder e não abria os detalhes ao tocar, além de um erro ao carregar a lista de projetos do Pages.",
+          "pt-PT": "Corrige problemas na plataforma do programador em que o Workers abria lentamente ou deixava de responder e não abria os detalhes ao tocar, além de um erro ao carregar a lista de projetos do Pages.",
+          "de": "Behebt Probleme in der Entwicklerplattform, bei denen Workers langsam öffnete oder nicht mehr reagierte und beim Tippen keine Details zeigte, sowie einen Ladefehler bei der Pages-Projektliste.",
+          "fr": "Corrige des problèmes de la plateforme développeur où Workers s'ouvrait lentement ou ne répondait plus et n'ouvrait pas le détail au toucher, ainsi qu'une erreur de chargement de la liste des projets Pages.",
+          "ar": "يعالج مشكلات في منصة المطوّرين كان فيها Workers يفتح ببطء أو يتوقف عن الاستجابة ولا يفتح التفاصيل عند النقر، إضافةً إلى خطأ في تحميل قائمة مشاريع Pages.",
+          "tr": "Geliştirici platformunda Workers'ın yavaş açılması veya yanıt vermeyi bırakması ve dokununca ayrıntıların açılmaması ile Pages proje listesinde oluşan yükleme hatasını giderir."
+        }
+      }
+    ]
+  },
+  {
     "version": "1.7.0",
     "date": "2026.06.28",
     "channel": "App Store",
