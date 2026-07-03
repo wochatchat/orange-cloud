@@ -288,7 +288,9 @@ final class AuthManager {
                 if let callbackURL {
                     continuation.resume(returning: callbackURL)
                 } else {
-                    continuation.resume(throwing: error ?? AuthError.invalidCallback)
+                    // 无 URL 也无 error 的收尾只发生在窗口被系统侧解散等边缘场景，按用户取消
+                    // 处理（静默返回），不报「回调格式错误」
+                    continuation.resume(throwing: error ?? ASWebAuthenticationSessionError(.canceledLogin))
                 }
             }
             // iOS 17.4+ 用 callback API；iOS 17.0–17.3 回退旧的 callbackURLScheme 初始化器
@@ -320,7 +322,15 @@ final class AuthManager {
             throw AuthError.invalidCallback
         }
         if let error = items.first(where: { $0.name == "error" })?.value {
-            throw AuthError.oauthError(error)
+            let description = items.first(where: { $0.name == "error_description" })?.value ?? ""
+            // invalid_scope = 请求了 OAuth client 未登记的 scope（client 配置变更 / 旧版 App
+            // 请求新权限时的高危场景），给明确引导而非裸错误码
+            if error == "invalid_scope" {
+                var message = String(localized: "授权请求包含 Cloudflare 尚未对本 App 开放的权限，无法完成登录。请更新到最新版本后重试。")
+                if !description.isEmpty { message += "\n\(description)" }
+                throw AuthError.oauthError(message)
+            }
+            throw AuthError.oauthError(description.isEmpty ? error : "\(error): \(description)")
         }
         guard let code = items.first(where: { $0.name == "code" })?.value,
               let state = items.first(where: { $0.name == "state" })?.value else {
