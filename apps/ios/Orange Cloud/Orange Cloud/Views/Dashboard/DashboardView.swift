@@ -171,6 +171,25 @@ private struct DashboardHomeView: View {
         .navigationDestination(for: CachedZone.self) { zone in
             ZoneDetailView(zone: zone, session: session)
         }
+        // Tunnel 全链路（列表 → 详情 → 连接信息）都挂在栈根：单一栈、不嵌套，
+        // 逐级 push 才在 iOS 17.0 正常（同 DeveloperHubView 的 DevHubRoute 做法）
+        .navigationDestination(for: DashboardRoute.self) { route in
+            switch route {
+            case .tunnels:
+                TunnelListView(session: session)
+            case .tunnelConnect(let tunnel):
+                TunnelConnectView(tunnel: tunnel, accountId: currentAccountId, session: session)
+            }
+        }
+        .navigationDestination(for: Tunnel.self) { tunnel in
+            TunnelDetailView(
+                tunnel: tunnel,
+                accountId: currentAccountId,
+                session: session,
+                canWrite: auth.hasScope("argotunnel.write"),
+                canWriteDNS: auth.hasScope("dns.write")
+            )
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 accountMenu
@@ -182,10 +201,14 @@ private struct DashboardHomeView: View {
         .task(id: displayZones.map(\.id)) {
             await loadTraffic()
         }
-        .task(id: session.selectedAccount?.id) {
+        // 账号维度的重跑由外壳 `.id(selectedAccount?.id)` 重建本视图完成，这两个 task
+        // **不能再用 id: 键在同一个账号值上**：冷启动 selectedAccount 从 nil 翻转到账号时，
+        // 旧实例的 .task(id:) 会先于父级换代重启一次，把加载跑进 VM 的非结构化 Task（拆视图
+        // 也取消不掉），新实例又带全新 VM 再跑一遍 → 概览页全部请求成对翻倍（logs-3 已坐实）。
+        .task {
             await loadAssets()
         }
-        .task(id: session.selectedAccount?.id) {
+        .task {
             await loadUsage()
         }
         .onChange(of: accountPrefs.billingCycleDay) {
@@ -1047,15 +1070,16 @@ private struct DashboardHomeView: View {
 
     private var networkSection: some View {
         VStack(spacing: 10) {
-            ProGatedNavigationLink(
+            // Tunnel 列表点行还要继续 push 详情/连接页：必须走值式 + 栈根 navdest，
+            // eager NavigationLink(destination:) 的目的页内部再 push 在 iOS 17.0 会卡死。
+            ProGatedValueLink(
                 label: "Cloudflare Tunnel",
                 systemImage: "arrow.triangle.2.circlepath",
                 requiredScope: "argotunnel.read",
                 feature: .tunnel,
-                showsChevron: true
-            ) {
-                TunnelListView(session: session)
-            }
+                showsChevron: true,
+                value: DashboardRoute.tunnels
+            )
             Divider().padding(.leading, 44)
             ProGatedNavigationLink(
                 label: "Access 应用",
@@ -1099,6 +1123,12 @@ private struct DashboardHomeView: View {
         .glassIsland(cornerRadius: 24)
     }
 
+}
+
+/// 概览页里「目的页自身还要继续 push」的入口路由（走栈根 navdest，同 DevHubRoute）
+enum DashboardRoute: Hashable {
+    case tunnels
+    case tunnelConnect(Tunnel)
 }
 
 // MARK: - 用量宫格的服务与瓦片
