@@ -86,6 +86,9 @@ struct ZoneDetailView: View {
                     }
                 }
 
+                // 本卡内 eager 门控行的保留判据：目的页是叶子（内部只开 sheet、不再 push）。
+                // 「规则」「负载均衡」的目的页还要继续 push，已改值式（ZoneRoute + 栈根 navdest）；
+                // 其余若日后加内层 push，必须同步改值式。
                 sectionCard(String(localized: "管理")) {
                     PermissionGatedNavigationLink(
                         label: String(localized: "DNS 记录"),
@@ -121,15 +124,14 @@ struct ZoneDetailView: View {
 
                     // 规则族（Transform / 缓存 / Snippets / 重定向 / 源站 / 配置 / 压缩 /
                     // 自定义错误 / Page Rules / URL 规范化）统一收进「规则」二级入口
-                    PermissionGatedNavigationLink(
+                    PermissionGatedValueLink(
                         label: String(localized: "规则"),
                         systemImage: "list.bullet.rectangle",
                         requiredScope: "zone.read",
                         tint: .orange,
-                        showsChevron: true
-                    ) {
-                        ZoneRulesHubView(zoneId: zone.id, zoneName: zone.name, session: session)
-                    }
+                        showsChevron: true,
+                        value: ZoneRoute.rulesHub(zoneId: zone.id, zoneName: zone.name)
+                    )
 
                     ProGatedNavigationLink(
                         label: "Email Routing",
@@ -182,16 +184,15 @@ struct ZoneDetailView: View {
                         ZoneAccessRulesView(zoneId: zone.id, session: session)
                     }
 
-                    ProGatedNavigationLink(
+                    ProGatedValueLink(
                         label: String(localized: "负载均衡"),
                         systemImage: "arrow.left.arrow.right",
                         requiredScope: "load-balancers.read",
                         feature: .loadBalancing,
                         tint: .pink,
-                        showsChevron: true
-                    ) {
-                        LoadBalancerListView(zoneId: zone.id, zoneName: zone.name, session: session)
-                    }
+                        showsChevron: true,
+                        value: ZoneRoute.loadBalancers(zoneId: zone.id, zoneName: zone.name)
+                    )
                 }
 
                 sectionCard(String(localized: "操作")) {
@@ -543,6 +544,36 @@ private extension View {
                 .foregroundStyle(.secondary)
                 .padding(.trailing, 24)
                 .allowsHitTesting(false)
+        }
+    }
+}
+
+// MARK: - 域名子树的值式路由
+
+/// 域名详情子树里「目的页自身还要继续 push」的入口路由。
+/// ZoneDetailView 有三个宿主栈（Dashboard 栈 / 网域 compact 栈 / iPad split detail 栈），
+/// 本路由的 navdest 必须在三处栈根都注册——统一走 `zoneRouteDestinations(session:)`。
+enum ZoneRoute: Hashable {
+    case rulesHub(zoneId: String, zoneName: String)
+    case loadBalancers(zoneId: String, zoneName: String)
+    case snippets(zoneId: String, zoneName: String)
+    case bulkRedirects
+}
+
+extension View {
+    /// 在宿主栈根注册域名子树路由（挂栈根直接子级、`.id()` 内侧，铁律见 DashboardView 外壳注释）
+    func zoneRouteDestinations(session: SessionStore) -> some View {
+        navigationDestination(for: ZoneRoute.self) { route in
+            switch route {
+            case .rulesHub(let zoneId, let zoneName):
+                ZoneRulesHubView(zoneId: zoneId, zoneName: zoneName, session: session)
+            case .loadBalancers(let zoneId, let zoneName):
+                LoadBalancerListView(zoneId: zoneId, zoneName: zoneName, session: session)
+            case .snippets(let zoneId, let zoneName):
+                SnippetsListView(zoneId: zoneId, zoneName: zoneName, session: session)
+            case .bulkRedirects:
+                BulkRedirectListsView(session: session)
+            }
         }
     }
 }

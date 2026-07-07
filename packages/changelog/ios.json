@@ -1,5 +1,46 @@
 [
   {
+    "version": "1.8.3",
+    "date": "2026.07.07",
+    "channel": "App Store",
+    "inApp": false,
+    "items": [
+      {
+        "icon": "wrench.and.screwdriver.fill",
+        "title": {
+          "zh-Hans": "稳定性修复",
+          "en": "Stability fixes",
+          "zh-Hant": "穩定性修復",
+          "zh-HK": "穩定性修復",
+          "ja": "安定性の修正",
+          "es-MX": "Correcciones de estabilidad",
+          "ko": "안정성 개선",
+          "pt-BR": "Correções de estabilidade",
+          "pt-PT": "Correções de estabilidade",
+          "de": "Stabilitätsverbesserungen",
+          "fr": "Corrections de stabilité",
+          "ar": "إصلاحات الاستقرار",
+          "tr": "Kararlılık düzeltmeleri"
+        },
+        "detail": {
+          "zh-Hans": "修复概览页「Access 应用 / Gateway 策略 / Bulk Redirects」点击后卡死或闪退的问题（iOS 17 设备尤为明显），并排查修复 Pages 项目子页打不开等同类导航隐患；iOS 17.0 个别设备上缓存数据库损坏导致的启动闪退现在会自动修复；另修复授权回调与后台令牌刷新的两类偶发退出。",
+          "en": "Fixes freezes and crashes when tapping “Access Apps / Gateway Policies / Bulk Redirects” on the Overview page (most noticeable on iOS 17), along with similar navigation issues such as Pages project sub-pages failing to open. Startup crashes caused by a corrupted cache database on a few iOS 17.0 devices are now repaired automatically, and two rare exits around the sign-in callback and background token refresh are fixed.",
+          "zh-Hant": "修復總覽頁「Access 應用程式 / Gateway 政策 / Bulk Redirects」點按後卡死或閃退的問題（iOS 17 裝置尤為明顯），並排查修復 Pages 專案子頁無法開啟等同類導覽問題；iOS 17.0 個別裝置上快取資料庫損毀導致的啟動閃退現在會自動修復；另修復授權回呼與背景權杖重新整理的兩類偶發退出。",
+          "zh-HK": "修復總覽頁「Access 應用程式 / Gateway 政策 / Bulk Redirects」點按後卡死或閃退的問題（iOS 17 裝置尤為明顯），並排查修復 Pages 專案子頁無法開啟等同類導覽問題；iOS 17.0 個別裝置上緩存資料庫損毀導致的啟動閃退現在會自動修復；另修復授權回調與背景令牌刷新的兩類偶發退出。",
+          "ja": "概要ページの「Access アプリ / Gateway ポリシー / Bulk Redirects」をタップするとフリーズまたはクラッシュする問題（iOS 17 端末で顕著）を修正し、Pages プロジェクトのサブページが開けないなど同種のナビゲーション問題も修正しました。iOS 17.0 の一部端末でキャッシュデータベースの破損による起動時クラッシュが自動修復されるようになり、サインインコールバックとバックグラウンドのトークン更新に関する 2 種類のまれな強制終了も修正しています。",
+          "es-MX": "Corrige bloqueos y cierres al tocar «Aplicaciones de Access / Políticas de Gateway / Bulk Redirects» en la página de resumen (especialmente en iOS 17), junto con problemas de navegación similares, como subpáginas de proyectos de Pages que no se abrían. Los cierres al iniciar causados por una base de datos de caché dañada en algunos dispositivos con iOS 17.0 ahora se reparan automáticamente, y se corrigen dos cierres poco frecuentes relacionados con el callback de inicio de sesión y la actualización del token en segundo plano.",
+          "ko": "개요 페이지에서 'Access 앱 / Gateway 정책 / Bulk Redirects'를 탭하면 멈추거나 종료되는 문제(iOS 17 기기에서 두드러짐)를 수정하고, Pages 프로젝트 하위 페이지가 열리지 않는 등 유사한 내비게이션 문제도 함께 수정했습니다. 일부 iOS 17.0 기기에서 캐시 데이터베이스 손상으로 발생하던 실행 시 종료가 이제 자동으로 복구되며, 로그인 콜백과 백그라운드 토큰 갱신 관련 두 가지 드문 종료 현상도 수정했습니다.",
+          "pt-BR": "Corrige travamentos e fechamentos ao tocar em “Apps do Access / Políticas do Gateway / Bulk Redirects” na página de visão geral (mais evidente no iOS 17), além de problemas de navegação semelhantes, como subpáginas de projetos do Pages que não abriam. Fechamentos na inicialização causados por banco de dados de cache corrompido em alguns aparelhos com iOS 17.0 agora são reparados automaticamente, e dois encerramentos raros ligados ao callback de login e à atualização do token em segundo plano foram corrigidos.",
+          "pt-PT": "Corrige bloqueios e fechos ao tocar em «Apps do Access / Políticas do Gateway / Bulk Redirects» na página de visão geral (mais evidente no iOS 17), bem como problemas de navegação semelhantes, como subpáginas de projetos do Pages que não abriam. Os fechos no arranque causados por uma base de dados de cache danificada em alguns dispositivos com iOS 17.0 são agora reparados automaticamente, e foram corrigidos dois encerramentos raros relacionados com o callback de início de sessão e a atualização do token em segundo plano.",
+          "de": "Behebt Einfrieren und Abstürze beim Antippen von „Access-Apps / Gateway-Richtlinien / Bulk Redirects“ auf der Übersichtsseite (besonders auf iOS 17) sowie ähnliche Navigationsprobleme, etwa nicht öffnende Unterseiten von Pages-Projekten. Startabstürze durch eine beschädigte Cache-Datenbank auf einzelnen iOS-17.0-Geräten werden jetzt automatisch repariert; außerdem wurden zwei seltene Abstürze rund um den Anmelde-Callback und die Token-Aktualisierung im Hintergrund behoben.",
+          "fr": "Corrige les blocages et plantages lors de l’appui sur « Applications Access / Politiques Gateway / Bulk Redirects » sur la page d’aperçu (surtout sous iOS 17), ainsi que des problèmes de navigation similaires, comme des sous-pages de projets Pages qui ne s’ouvraient pas. Les plantages au démarrage dus à une base de cache corrompue sur certains appareils iOS 17.0 sont désormais réparés automatiquement, et deux fermetures rares liées au rappel de connexion et à l’actualisation du jeton en arrière-plan sont corrigées.",
+          "ar": "يعالج هذا التحديث تجمّد التطبيق أو انهياره عند النقر على «تطبيقات Access / سياسات Gateway / Bulk Redirects» في صفحة النظرة العامة (خاصة على iOS 17)، إضافة إلى مشاكل تنقّل مماثلة مثل تعذّر فتح الصفحات الفرعية لمشاريع Pages. كما يُصلح الآن تلقائيًا انهيار بدء التشغيل الناتج عن تلف قاعدة بيانات التخزين المؤقت على بعض أجهزة iOS 17.0، ويعالج حالتين نادرتين من الإغلاق تتعلقان برد نداء تسجيل الدخول وتحديث الرمز في الخلفية.",
+          "tr": "Genel bakış sayfasında “Access Uygulamaları / Gateway Politikaları / Bulk Redirects” öğelerine dokununca donma veya kapanma sorunu (özellikle iOS 17 cihazlarda) ve Pages proje alt sayfalarının açılmaması gibi benzer gezinme sorunları giderildi. Bazı iOS 17.0 cihazlarda bozuk önbellek veritabanının neden olduğu açılış çökmeleri artık otomatik olarak onarılıyor; ayrıca oturum açma geri çağrısı ve arka plan token yenilemeyle ilgili iki nadir kapanma düzeltildi."
+        }
+      }
+    ]
+  },
+  {
     "version": "1.8.2",
     "date": "2026.07.05",
     "channel": "App Store",

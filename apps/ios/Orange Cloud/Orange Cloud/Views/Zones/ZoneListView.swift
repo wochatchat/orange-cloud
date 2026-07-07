@@ -50,7 +50,9 @@ struct ZoneListView: View {
             } detail: {
                 if let zone = selectedZone {
                     NavigationStack {
+                        // split 模式下详情栏自成一栈，域名子树路由挂在这个栈根
                         ZoneDetailView(zone: zone, session: session)
+                            .zoneRouteDestinations(session: session)
                     }
                 } else {
                     ContentUnavailableView("选择一个域名", systemImage: "globe", description: Text("从左侧列表选择域名查看详情"))
@@ -63,6 +65,7 @@ struct ZoneListView: View {
                         ZoneDetailView(zone: zone, session: session)
                             .zoomNavigationTransition(sourceID: zone.id, in: zoomNamespace)
                     }
+                    .zoneRouteDestinations(session: session)
                     .id(session.selectedAccount?.id)
             }
         }

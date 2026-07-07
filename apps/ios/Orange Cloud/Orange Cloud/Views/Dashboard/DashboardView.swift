@@ -53,6 +53,12 @@ struct DashboardView: View {
                         TunnelListView(session: session)
                     case .tunnelConnect(let tunnel):
                         TunnelConnectView(tunnel: tunnel, accountId: currentAccountId, session: session)
+                    case .accessApps:
+                        AccessAppsView(session: session)
+                    case .gatewayRules:
+                        GatewayRulesView(session: session)
+                    case .bulkRedirects:
+                        BulkRedirectListsView(session: session)
                     }
                 }
                 .navigationDestination(for: Tunnel.self) { tunnel in
@@ -64,6 +70,9 @@ struct DashboardView: View {
                         canWriteDNS: auth.hasScope("dns.write")
                     )
                 }
+                // 域名详情子树（规则 hub / 负载均衡 / Snippets / Bulk Redirects）从本栈
+                // push 的域名卡进入，其路由也要挂在本栈根
+                .zoneRouteDestinations(session: session)
                 .id(session.selectedAccount?.id)
         }
     }
@@ -1098,25 +1107,25 @@ private struct DashboardHomeView: View {
                 value: DashboardRoute.tunnels
             )
             Divider().padding(.leading, 44)
-            ProGatedNavigationLink(
+            // Access / Gateway 同样必须值式：本岛（非 List 容器）里 eager 构造的目的页
+            // 在 iOS 17.0 点击即整 App 冻结/看门狗杀（TF 用户实测，与 Tunnel 当年同症）。
+            ProGatedValueLink(
                 label: "Access 应用",
                 systemImage: "lock.shield",
                 requiredScope: "access.read",
                 feature: .zeroTrust,
-                showsChevron: true
-            ) {
-                AccessAppsView(session: session)
-            }
+                showsChevron: true,
+                value: DashboardRoute.accessApps
+            )
             Divider().padding(.leading, 44)
-            ProGatedNavigationLink(
+            ProGatedValueLink(
                 label: "Gateway 策略",
                 systemImage: "shield.lefthalf.filled",
                 requiredScope: "teams.read",
                 feature: .zeroTrust,
-                showsChevron: true
-            ) {
-                GatewayRulesView(session: session)
-            }
+                showsChevron: true,
+                value: DashboardRoute.gatewayRules
+            )
         }
         .padding(.horizontal, OCLayout.islandPadding + 2)
         .padding(.vertical, 12)
@@ -1126,15 +1135,15 @@ private struct DashboardHomeView: View {
     // MARK: - Bulk Redirects（account 级）
 
     private var bulkRedirectsSection: some View {
-        ProGatedNavigationLink(
+        // 列表页内部还要 push 条目详情，且带 .searchable：eager 形态在 iOS 17.0 点击必卡死，走值式
+        ProGatedValueLink(
             label: "Bulk Redirects",
             systemImage: "arrowshape.turn.up.right",
             requiredScope: "account-rule-lists.read",
             feature: .bulkRedirects,
-            showsChevron: true
-        ) {
-            BulkRedirectListsView(session: session)
-        }
+            showsChevron: true,
+            value: DashboardRoute.bulkRedirects
+        )
         .padding(.horizontal, OCLayout.islandPadding + 2)
         .padding(.vertical, 12)
         .glassIsland(cornerRadius: 24)
@@ -1142,10 +1151,14 @@ private struct DashboardHomeView: View {
 
 }
 
-/// 概览页里「目的页自身还要继续 push」的入口路由（走栈根 navdest，同 DevHubRoute）
+/// 概览页玻璃岛入口路由（走栈根 navdest，同 DevHubRoute）。本岛为非 List 容器，
+/// eager `NavigationLink(destination:)` 在 iOS 17.0 点击即冻结（叶子目的页也一样），一律值式。
 enum DashboardRoute: Hashable {
     case tunnels
     case tunnelConnect(Tunnel)
+    case accessApps
+    case gatewayRules
+    case bulkRedirects
 }
 
 // MARK: - 用量宫格的服务与瓦片

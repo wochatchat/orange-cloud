@@ -20,6 +20,9 @@ struct ZoneRulesHubView: View {
     let session: SessionStore
 
     var body: some View {
+        // 本页 eager 门控行的保留判据：目的页是叶子（ZonePhaseRules / Transform / 缓存规则 /
+        // Page Rules / URL 规范化内部只开 sheet、不再 push）。Bulk Redirects 与 Snippets
+        // 的目的页还要继续 push，已改值式（ZoneRoute，navdest 在宿主栈根）。
         List {
             Section("重定向") {
                 ProGatedNavigationLink(
@@ -31,15 +34,16 @@ struct ZoneRulesHubView: View {
                 ) {
                     ZonePhaseRulesListView(zoneId: zoneId, phase: .singleRedirect, session: session)
                 }
-                ProGatedNavigationLink(
+                // 列表页内部还要 push 条目详情且带 .searchable，入口必须值式
+                // （本页自身也是被 push 的，navdest 在宿主栈根，见 zoneRouteDestinations）
+                ProGatedValueLink(
                     label: "Bulk Redirects",
                     systemImage: "arrow.triangle.swap",
                     requiredScope: "mass-url-redirects.read",
                     feature: .bulkRedirects,
-                    tint: .orange
-                ) {
-                    BulkRedirectListsView(session: session)
-                }
+                    tint: .orange,
+                    value: ZoneRoute.bulkRedirects
+                )
             }
             .glassRow()
 
@@ -101,15 +105,15 @@ struct ZoneRulesHubView: View {
                 ) {
                     CacheRulesListView(zoneId: zoneId, session: session)
                 }
-                ProGatedNavigationLink(
+                // Snippets 列表内部还要 push 详情页（代码 + 规则），入口必须值式
+                ProGatedValueLink(
                     label: "Snippets",
                     systemImage: "curlybraces",
                     requiredScope: "snippets.read",
                     feature: .snippets,
-                    tint: .indigo
-                ) {
-                    SnippetsListView(zoneId: zoneId, zoneName: zoneName, session: session)
-                }
+                    tint: .indigo,
+                    value: ZoneRoute.snippets(zoneId: zoneId, zoneName: zoneName)
+                )
             }
             .glassRow()
 

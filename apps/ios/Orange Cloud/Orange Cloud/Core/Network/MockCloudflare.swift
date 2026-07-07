@@ -118,6 +118,10 @@ nonisolated final class MockCFURLProtocol: URLProtocol {
         if path.hasSuffix("/workers/scripts") {
             return envelope(#"[{"id":"api-worker","handlers":["fetch"],"logpush":false},{"id":"cron-worker","handlers":["scheduled"],"logpush":false}]"#, total: 2)
         }
+        // Pages 项目（验证 DevHub → 列表 → 项目详情的值式导航链路）
+        if path.hasSuffix("/pages/projects") {
+            return envelope(#"[{"name":"demo-site","subdomain":"demo-site.pages.dev","domains":["demo.example.com"],"production_branch":"main","created_on":"2026-01-01T00:00:00Z"}]"#, total: 1)
+        }
         // 其余端点：空数组成功信封（调用方多为 try? 包裹，可优雅降级）
         return envelope("[]", total: 0)
     }
