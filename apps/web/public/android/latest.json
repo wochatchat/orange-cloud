@@ -1,7 +1,7 @@
 {
-  "versionCode": 13,
+  "versionCode": 14,
   "versionName": "1.6.4",
   "minVersionCode": 1,
   "url": "https://o-c.do/orange-cloud.apk",
-  "note": "本次更新：账号用量总览（Workers/R2/D1/KV 用量与额度），Worker 部署历史与删除，存储管理增强（KV/R2 创建删除、D1 删表、Pages 部署删除）。"
+  "note": "修复：已授权「流量分析」时账号用量仍提示需要权限的问题。"
 }
