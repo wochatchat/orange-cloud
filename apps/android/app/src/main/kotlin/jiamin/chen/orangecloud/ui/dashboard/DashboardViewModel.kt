@@ -210,22 +210,27 @@ class DashboardViewModel @Inject constructor(
      * R2 / CPU / D1 / KV 独立合并，能显示多少显示多少（对齐 iOS performLoadUsage）。
      */
     fun loadUsage(force: Boolean = false) {
-        val accountId = accountStore.selectedAccountId.value ?: return
-        val hasScope = authRepository.hasScope(Scopes.ACCOUNT_ANALYTICS_READ)
-        _uiState.update { it.copy(hasAccountAnalytics = hasScope) }
-        if (!hasScope) return
-
-        usageCache[accountId]?.let { cached ->
-            if (_uiState.value.usage == null) _uiState.update { it.copy(usage = cached) }
-        }
-        if (!force && usageLoadedForAccount == accountId) return
-        if (!force && analyticsUnavailableForAccount == accountId) {
-            _uiState.update { it.copy(accountAnalyticsUnavailable = true, usageLoading = false) }
-            return
-        }
-
         usageJob?.cancel()
         usageJob = viewModelScope.launch {
+            // 冷启动竞态修复：refresh() 同步调进来时账号索引可能还没从磁盘加载完，
+            // selectedAccountId 为 null 曾直接 return → hasAccountAnalytics 停在默认 false，
+            // 锁卡「需要流量分析权限」常驻（真机实证：scope 授权齐全仍被误挡）。
+            // 先 ensureLoaded 再取账号，门控判定与加载全部进协程。
+            accountStore.ensureLoaded()
+            val accountId = accountStore.selectedAccountId.value ?: return@launch
+            val hasScope = authRepository.hasScope(Scopes.ACCOUNT_ANALYTICS_READ)
+            _uiState.update { it.copy(hasAccountAnalytics = hasScope) }
+            if (!hasScope) return@launch
+
+            usageCache[accountId]?.let { cached ->
+                if (_uiState.value.usage == null) _uiState.update { it.copy(usage = cached) }
+            }
+            if (!force && usageLoadedForAccount == accountId) return@launch
+            if (!force && analyticsUnavailableForAccount == accountId) {
+                _uiState.update { it.copy(accountAnalyticsUnavailable = true, usageLoading = false) }
+                return@launch
+            }
+
             _uiState.update { it.copy(usageLoading = true, usageLoadFailed = false, accountAnalyticsUnavailable = false) }
             // 内存无缓存时先从磁盘回显上次快照，网络回来再覆盖（对齐 iOS UsageCache 落盘）
             if (usageCache[accountId] == null) {
