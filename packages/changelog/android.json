@@ -1,5 +1,108 @@
 [
   {
+    "version": "1.6.5",
+    "date": "2026.07.18",
+    "channel": "Google Play",
+    "items": [
+      {
+        "title": {
+          "zh-Hans": "workers.dev 子域直达",
+          "en": "One-tap workers.dev URL",
+          "zh-Hant": "workers.dev 子網域直達",
+          "zh-HK": "workers.dev 子網域直達",
+          "ja": "workers.dev サブドメインに直接アクセス",
+          "es-MX": "Acceso directo al subdominio workers.dev",
+          "ko": "workers.dev 서브도메인 바로 열기",
+          "pt-BR": "Acesso direto ao subdomínio workers.dev",
+          "pt-PT": "Acesso direto ao subdomínio workers.dev",
+          "de": "Direkter workers.dev-Zugriff",
+          "fr": "Accès direct au sous-domaine workers.dev",
+          "ar": "وصول مباشر إلى نطاق workers.dev الفرعي",
+          "tr": "workers.dev alt alan adına doğrudan erişim"
+        },
+        "detail": {
+          "zh-Hans": "Worker 开启 workers.dev 子域后，直接显示完整访问地址，点一下即可打开。",
+          "en": "When a Worker’s workers.dev subdomain is on, its full URL now shows right there — tap to open.",
+          "zh-Hant": "Worker 開啟 workers.dev 子網域後，直接顯示完整存取網址，點一下即可開啟。",
+          "zh-HK": "Worker 開啟 workers.dev 子網域後，直接顯示完整存取網址，點一下即可開啟。",
+          "ja": "Worker の workers.dev サブドメインを有効にすると、完全な URL が表示され、タップして開けます。",
+          "es-MX": "Cuando el subdominio workers.dev de un Worker está activo, ahora se muestra su URL completa: tócala para abrir.",
+          "ko": "Worker의 workers.dev 서브도메인을 켜면 전체 주소가 바로 표시되며, 탭하면 열립니다.",
+          "pt-BR": "Quando o subdomínio workers.dev de um Worker está ativo, a URL completa aparece ali — toque para abrir.",
+          "pt-PT": "Quando o subdomínio workers.dev de um Worker está ativo, o URL completo aparece ali — toque para abrir.",
+          "de": "Ist die workers.dev-Subdomain eines Workers aktiv, wird jetzt die vollständige URL angezeigt – zum Öffnen tippen.",
+          "fr": "Lorsque le sous-domaine workers.dev d’un Worker est activé, son URL complète s’affiche : touchez pour l’ouvrir.",
+          "ar": "عند تفعيل نطاق workers.dev الفرعي لأحد Workers، يظهر عنوانه الكامل الآن — انقر لفتحه.",
+          "tr": "Bir Worker’ın workers.dev alt alan adı açıkken tam adresi artık orada görünür; açmak için dokunun."
+        }
+      },
+      {
+        "title": {
+          "zh-Hans": "快速绑定 D1 / KV",
+          "en": "Quickly bind D1 / KV",
+          "zh-Hant": "快速綁定 D1 / KV",
+          "zh-HK": "快速綁定 D1 / KV",
+          "ja": "D1 / KV をすばやくバインド",
+          "es-MX": "Vincula D1 / KV rápidamente",
+          "ko": "D1 / KV 빠른 바인딩",
+          "pt-BR": "Vincule D1 / KV rapidamente",
+          "pt-PT": "Vincule D1 / KV rapidamente",
+          "de": "D1 / KV schnell binden",
+          "fr": "Lier rapidement D1 / KV",
+          "ar": "ربط D1 / KV بسرعة",
+          "tr": "D1 / KV’yi hızlıca bağla"
+        },
+        "detail": {
+          "zh-Hans": "在变量与密钥页直接把现有 D1 数据库或 KV 命名空间绑定到 Worker，也能一键解除。",
+          "en": "Bind an existing D1 database or KV namespace to a Worker right from the bindings page — and unbind just as easily.",
+          "zh-Hant": "在變數與密鑰頁直接把現有 D1 資料庫或 KV 命名空間綁定到 Worker，也能一鍵解除。",
+          "zh-HK": "在變數與密鑰頁直接把現有 D1 資料庫或 KV 命名空間綁定到 Worker，也能一鍵解除。",
+          "ja": "変数とシークレットのページから、既存の D1 データベースや KV ネームスペースを Worker にバインドでき、解除も簡単です。",
+          "es-MX": "Vincula una base de datos D1 o un espacio de nombres KV existente a un Worker desde la página de vínculos, y desvincúlalos con la misma facilidad.",
+          "ko": "변수·시크릿 페이지에서 기존 D1 데이터베이스나 KV 네임스페이스를 Worker에 바인딩하고, 해제도 간편합니다.",
+          "pt-BR": "Vincule um banco de dados D1 ou namespace KV existente a um Worker direto na página de vínculos — e desvincule com a mesma facilidade.",
+          "pt-PT": "Vincule uma base de dados D1 ou namespace KV existente a um Worker diretamente na página de ligações — e desvincule com a mesma facilidade.",
+          "de": "Binde eine vorhandene D1-Datenbank oder einen KV-Namespace direkt auf der Bindungsseite an einen Worker – und löse die Bindung ebenso einfach.",
+          "fr": "Liez une base de données D1 ou un espace de noms KV existant à un Worker depuis la page des liaisons, et dissociez-les tout aussi facilement.",
+          "ar": "اربط قاعدة بيانات D1 أو مساحة أسماء KV موجودة بأحد Workers مباشرة من صفحة الروابط، وألغِ الربط بالسهولة نفسها.",
+          "tr": "Mevcut bir D1 veritabanını veya KV ad alanını bağlamalar sayfasından doğrudan bir Worker’a bağlayın; bağlantıyı kaldırmak da aynı kolaylıkta."
+        }
+      },
+      {
+        "title": {
+          "zh-Hans": "修复编辑长脚本闪退",
+          "en": "Fixed crash when editing long scripts",
+          "zh-Hant": "修復編輯長腳本閃退",
+          "zh-HK": "修復編輯長腳本閃退",
+          "ja": "長いスクリプト編集時のクラッシュを修正",
+          "es-MX": "Corregido un cierre al editar scripts largos",
+          "ko": "긴 스크립트 편집 시 앱 종료 문제 수정",
+          "pt-BR": "Corrigido travamento ao editar scripts longos",
+          "pt-PT": "Corrigida falha ao editar scripts longos",
+          "de": "Absturz beim Bearbeiten langer Skripte behoben",
+          "fr": "Correction d’un plantage lors de l’édition de longs scripts",
+          "ar": "إصلاح تعطّل عند تحرير النصوص البرمجية الطويلة",
+          "tr": "Uzun betikler düzenlenirken oluşan çökme giderildi"
+        },
+        "detail": {
+          "zh-Hans": "修复编辑较长 Worker 源码时可能闪退的问题。",
+          "en": "Fixed a crash that could occur when editing a longer Worker script.",
+          "zh-Hant": "修復編輯較長 Worker 原始碼時可能閃退的問題。",
+          "zh-HK": "修復編輯較長 Worker 原始碼時可能閃退的問題。",
+          "ja": "長めの Worker ソースコードを編集する際にクラッシュすることがある問題を修正しました。",
+          "es-MX": "Se corrigió un cierre que podía ocurrir al editar el código de un Worker más largo.",
+          "ko": "긴 Worker 소스 코드를 편집할 때 앱이 종료될 수 있던 문제를 수정했습니다.",
+          "pt-BR": "Corrigido um travamento que podia ocorrer ao editar o código-fonte de um Worker mais longo.",
+          "pt-PT": "Corrigida uma falha que podia ocorrer ao editar o código-fonte de um Worker mais longo.",
+          "de": "Ein Absturz beim Bearbeiten längerer Worker-Quelltexte wurde behoben.",
+          "fr": "Correction d’un plantage pouvant survenir lors de l’édition d’un code source de Worker plus long.",
+          "ar": "تم إصلاح تعطّل قد يحدث عند تحرير شفرة مصدر Worker أطول.",
+          "tr": "Daha uzun bir Worker kaynak kodu düzenlenirken oluşabilen bir çökme giderildi."
+        }
+      }
+    ]
+  },
+  {
     "version": "1.6.4",
     "date": "2026.07.18",
     "channel": "Google Play",
